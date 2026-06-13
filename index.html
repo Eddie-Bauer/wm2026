@@ -736,24 +736,17 @@ function renderDetail(d,m){
   const narrativeHtml=narrative
     ?`<p class="det-narrative">${narrative}</p>`:"";
 
-  /* Tore-Liste — immer rendern */
-  const totalGoals=(m.score?.a||0)+(m.score?.b||0);
-  let goalsBody="";
-  if(goals.length){
-    goalsBody=`<div class="det-goals-list">${goals.map(g=>{
+  /* Tore-Liste — nur wenn echte Schützen vorhanden */
+  const goalsHtml=goals.length?`
+    <div class="det-section-label">Tore</div>
+    <div class="det-goals-list">${goals.map(g=>{
       const side=g.team?(g.team===m.a?"home":"away"):"home";
       return`<div class="det-goal-row det-goal-${side}">
         ${side==="home"
           ?`<span class="dg-min">${g.min?g.min+"'":""}</span>${BALL_SVG}<span class="dg-player">${esc(g.player)}</span><span class="dg-team">${esc(TEAMS[g.team]?.n||g.team)}</span>`
           :`<span class="dg-team">${esc(TEAMS[g.team]?.n||g.team)}</span><span class="dg-player">${esc(g.player)}</span>${BALL_SVG}<span class="dg-min">${g.min?g.min+"'":""}</span>`}
       </div>`;
-    }).join("")}</div>`;
-  } else if(totalGoals===0){
-    goalsBody=`<div class="det-no-goals">Kein Tor erzielt</div>`;
-  } else {
-    goalsBody=`<div class="det-no-goals">${m.score.a>0?`${esc(m.aName)} ${m.score.a}×`:""} ${m.score.b>0?`· ${esc(m.bName)} ${m.score.b}×`:""}<br><span style="font-size:.72rem;color:var(--mute)">Torschützen von ESPN nicht bereitgestellt</span></div>`;
-  }
-  const goalsHtml=`<div class="det-section-label">Tore</div>${goalsBody}`;
+    }).join("")}</div>`:"";
 
   const statsHtml=rows
     ?`<div class="det-section-label">Statistik</div><div class="det-stats">${rows}</div>`:"";
