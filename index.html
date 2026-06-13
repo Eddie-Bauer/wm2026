@@ -90,7 +90,7 @@ section.panel{min-width:0}
 .panel h2{font-size:1.02rem;margin:3px 2px 11px;display:flex;align-items:center;gap:8px}
 .panel h2 .tag{font-size:.68rem;font-weight:700;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
 .daygroup{margin-bottom:16px}
-.dayhead{font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:0 2px 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.dayhead{font-size:.82rem;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.6px;margin:0 2px 8px;padding-bottom:6px;border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif}
 
 /* MATCH CARD */
 .match{background:rgba(12,20,34,0.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;cursor:pointer}
@@ -629,7 +629,7 @@ function mCard(m){
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
   const dateLabel=new Date(m.date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
   const kickoff=m.status==="finished"?`<span>${m.time} Uhr</span>`:"";
-  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span>${dateLabel}</span>${kickoff}${place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}</span>`:""}</div>`;
+  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span style="font-weight:700;color:var(--txt)">${dateLabel}</span>${kickoff}${place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}</span>`:""}</div>`;
   const goals=m.events.filter(e=>e.type==="goal");
   const evH=goals.length?`<div class="evmini">${goals.map(e=>`<div class="ei"><span class="em">${e.min}'</span>⚽ ${esc(e.player)}<span style="color:var(--mute)"> (${esc(e.teamName||TEAMS[e.team]?.n||e.team)})</span></div>`).join("")}</div>`:"";
   const canExpand=m.status==="finished"||m.status==="live";
