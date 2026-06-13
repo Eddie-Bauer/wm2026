@@ -165,6 +165,28 @@ tr.q3 .pos{background:rgba(232,168,32,.2);color:var(--warn)}
 .glegend span{display:flex;align-items:center;gap:5px}
 .lg{width:10px;height:10px;border-radius:3px}.lg.q{background:var(--green)}.lg.t{background:var(--warn)}
 
+/* MATCH DETAIL EXPAND */
+.match-detail{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;opacity:0}
+.match.expanded .match-detail{max-height:600px;opacity:1}
+.det-inner{padding-top:13px;margin-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.det-header{display:flex;justify-content:space-between;font-size:.75rem;color:var(--dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px}
+.det-stats{display:flex;flex-direction:column;gap:4px}
+.det-stat{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;font-size:.8rem;padding:5px 2px;border-radius:6px;transition:background .15s}
+.det-stat:hover{background:rgba(255,255,255,.04)}
+.det-v{font-variant-numeric:tabular-nums;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:1rem}
+.det-v:last-child{text-align:right}
+.det-l{text-align:center;font-size:.65rem;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;padding:0 4px}
+.det-bar{grid-column:1/-1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin:-2px 0 2px;overflow:hidden}
+.det-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),rgba(197,160,40,.4));border-radius:2px;transition:width .6s ease}
+.det-goals{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px}
+.det-goal{font-size:.78rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+.det-goal .dg-min{font-size:.7rem;color:var(--mute);min-width:28px;font-variant-numeric:tabular-nums}
+.det-loading,.det-empty{text-align:center;color:var(--mute);font-size:.8rem;padding:18px;font-style:italic}
+.match-expand-hint{font-size:.68rem;color:var(--mute);margin-top:6px;text-align:center;letter-spacing:.3px;transition:color .2s}
+.match:hover .match-expand-hint{color:var(--dim)}
+.expand-chevron{display:inline-block;transition:transform .3s ease;margin-left:4px}
+.match.expanded .expand-chevron{transform:rotate(180deg)}
+
 /* KO */
 .ko-note{background:rgba(12,20,34,0.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--green);border-radius:var(--r);padding:14px 17px;margin-bottom:14px;font-size:.86rem;color:var(--dim);line-height:1.6}
 .ko-note b{color:var(--txt)}
@@ -606,17 +628,96 @@ function mCard(m){
   const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">${m.time}</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
   const dateLabel=new Date(m.date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
-  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span>${dateLabel}</span>${place?`<span>📍 ${place}</span>`:""}</div>`;
+  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span>${dateLabel}</span>${place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}</span>`:""}</div>`;
   const goals=m.events.filter(e=>e.type==="goal");
   const evH=goals.length?`<div class="evmini">${goals.map(e=>`<div class="ei"><span class="em">${e.min}'</span>⚽ ${esc(e.player)}<span style="color:var(--mute)"> (${esc(e.teamName||TEAMS[e.team]?.n||e.team)})</span></div>`).join("")}</div>`:"";
-  return`<div class="match${m.status==="live"?" live":""}">
+  const canExpand=m.status==="finished"||m.status==="live";
+  const expandHint=canExpand?`<div class="match-expand-hint">Details<span class="expand-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></div>`:"";
+  const detailDiv=canExpand?`<div class="match-detail"><div class="det-loading">Lade Statistiken …</div></div>`:"";
+  const clickAttr=canExpand?`onclick="toggleDetail('${esc(m.id)}')" data-mid="${esc(m.id)}"`:""
+  return`<div class="match${m.status==="live"?" live":""}" ${clickAttr}>
     <div class="top">${meta}${badge}</div>
     <div class="row">
       <div class="team a">${tImg(m.aLogo,m.aFlag)}<span class="tname">${esc(m.aName)}</span></div>
       ${sc}
       <div class="team b"><span class="tname">${esc(m.bName)}</span>${tImg(m.bLogo,m.bFlag)}</div>
-    </div>${evH}
+    </div>${evH}${expandHint}${detailDiv}
   </div>`;
+}
+
+/* ============================================================
+   9. MATCH DETAIL EXPAND
+   ============================================================ */
+async function fetchMatchSummary(apiId){
+  const k="sum_"+apiId,c=cG(k);if(c) return c;
+  const d=await fetch(ESPN+"/summary?event="+apiId).then(r=>r.json());
+  cS(k,d,10*60*1000);
+  return d;
+}
+
+function renderDetail(d,m){
+  const teams=d.boxscore?.teams||[];
+  const home=teams.find(t=>t.homeAway==="home")||teams[0];
+  const away=teams.find(t=>t.homeAway==="away")||teams[1];
+  const hStats={},aStats={};
+  (home?.statistics||[]).forEach(s=>hStats[s.name]=s.displayValue);
+  (away?.statistics||[]).forEach(s=>aStats[s.name]=s.displayValue);
+
+  const SHOW=[
+    {k:"possessionPct",l:"Ballbesitz",pct:true},
+    {k:"shotsTotal",l:"Schüsse"},
+    {k:"shotsOnTarget",l:"Aufs Tor"},
+    {k:"cornerKicks",l:"Ecken"},
+    {k:"foulsCommitted",l:"Fouls"},
+    {k:"offsides",l:"Abseits"},
+    {k:"yellowCards",l:"Gelb"},
+    {k:"saves",l:"Paraden"}
+  ];
+
+  const rows=SHOW.map(({k,l,pct})=>{
+    const hv=hStats[k],av=aStats[k];
+    if(!hv&&!av) return"";
+    const bar=pct?`<div class="det-bar"><div class="det-bar-fill" style="width:${hv||'50%'}"></div></div>`:"";
+    return`<div class="det-stat"><span class="det-v">${hv||"–"}</span><span class="det-l">${l}</span><span class="det-v">${av||"–"}</span></div>${bar}`;
+  }).join("");
+
+  /* Scorende Spieler aus keyEvents falls vorhanden */
+  const scoring=(d.scoringPlays||d.keyEvents||[]).filter(e=>e.scoringPlay||e.type?.id==="goal");
+  const goalsHtml=scoring.length?`<div class="det-goals">${scoring.map(e=>{
+    const min=e.clock?.displayValue||e.period?.displayValue||"";
+    const player=e.athletesInvolved?.[0]?.displayName||e.text||"";
+    const team=e.team?.abbreviation||"";
+    const side=team===m.a?"left":"right";
+    return`<div class="det-goal" style="justify-content:${side==="left"?"flex-start":"flex-end"}">
+      <span class="dg-min">${min}</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--green)" style="flex:none"><circle cx="12" cy="12" r="10"/></svg>
+      <span>${esc(player)}</span>
+    </div>`;
+  }).join("")}</div>`:"";
+
+  if(!rows&&!goalsHtml) return`<div class="det-inner"><div class="det-empty">Keine Statistiken verfügbar.</div></div>`;
+
+  return`<div class="det-inner">
+    <div class="det-header"><span>${esc(m.aName)}</span><span>${esc(m.bName)}</span></div>
+    ${goalsHtml}
+    <div class="det-stats">${rows}</div>
+  </div>`;
+}
+
+function toggleDetail(id){
+  const card=document.querySelector('[data-mid="'+id+'"]');
+  if(!card) return;
+  const isOpen=card.classList.contains("expanded");
+  document.querySelectorAll(".match.expanded").forEach(c=>c.classList.remove("expanded"));
+  if(isOpen) return;
+  card.classList.add("expanded");
+  const det=card.querySelector(".match-detail");
+  if(!det||det.dataset.loaded) return;
+  const m=MATCHES.find(x=>x.id===id);
+  if(!m?.apiId){det.innerHTML=`<div class="det-inner"><div class="det-empty">Keine Daten (Mock-Modus).</div></div>`;det.dataset.loaded="1";return;}
+  fetchMatchSummary(m.apiId)
+    .then(d=>{det.innerHTML=renderDetail(d,m);det.dataset.loaded="1";})
+    .catch(()=>{det.innerHTML=`<div class="det-inner"><div class="det-empty">Fehler beim Laden.</div></div>`;det.dataset.loaded="1";});
 }
 
 /* ============================================================
@@ -694,7 +795,7 @@ async function renderTicker(){
   sc.innerHTML=`<div class="ss">${m.aFlag} ${esc(m.aName)} <span style="color:var(--mute)">${ss}</span> ${esc(m.bName)} ${m.bFlag}</div>${mmHtml}`;
   let evs=m.events||[];
   if(m.status==="live"||m.status==="finished"){
-    const fresh=await fetchLiveEvents(apiKey?m.apiId:m.id);
+    const fresh=await fetchLiveEvents(m.id);
     if(fresh.length) evs=fresh;
     if(m.events&&fresh.length) m.events=fresh;
   }
