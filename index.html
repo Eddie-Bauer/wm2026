@@ -10,23 +10,22 @@
 <style>
 /* ══════════════════════════════════════════════
    FIFA WM 2026 — MATCH CENTER v5
-   4 surface layers · Score-first · Premium dark
-   IBM Plex Mono only for time/data values
+   Official FIFA palette: navy · gold · red
    ══════════════════════════════════════════════ */
 :root{
-  /* 4 clear surface layers */
-  --bg:#0B0D12;
-  --bg2:#0F1220;
-  --s0:#13182A;
-  --s1:#1A2238;
-  --s2:#212C48;
-  /* borders */
-  --b0:#1C2A42;
-  --b1:#293C58;
-  /* text — 3 readable levels */
-  --t0:#E8F0FF;
-  --t1:#8AAAD0;
-  --t2:#3D5470;
+  /* FIFA 2026 — 4 surface layers, clearly navy */
+  --bg:#080F28;
+  --bg2:#0C1638;
+  --s0:#101E48;
+  --s1:#172858;
+  --s2:#1E3268;
+  /* borders — visible on navy */
+  --b0:#1E3060;
+  --b1:#2A4278;
+  /* text — bright, high contrast on navy */
+  --t0:#F0F6FF;
+  --t1:#90B4E8;
+  --t2:#4060A0;
   /* compat aliases */
   --txt:var(--t0);
   --dim:var(--t1);
@@ -36,16 +35,17 @@
   --line:var(--b0);
   --line2:var(--b1);
   /* semantic */
-  --gold:#E8A020;
-  --gold2:#F0B838;
-  --green:#E8A020;
-  --red:#FF2838;
-  --blue:#3870D0;
-  --blue2:#6898F0;
-  --warn:#D08020;
+  /* FIFA 2026 official — trophy gold, FIFA red, FIFA blue */
+  --gold:#C8A020;       /* trophy gold */
+  --gold2:#E0B830;
+  --green:#C8A020;
+  --red:#C8102E;        /* FIFA red — official */
+  --blue:#003DA5;       /* FIFA blue — official */
+  --blue2:#5088E0;      /* lighter blue for readability */
+  --warn:#D07020;
   --r:8px;
   --rs:5px;
-  --sh:0 2px 12px rgba(0,0,0,.5);
+  --sh:0 2px 14px rgba(0,0,0,.45);
   --max:1200px;
 }
 
@@ -53,8 +53,9 @@
 html,body{height:100%}
 body{
   background:
-    radial-gradient(ellipse 900px 500px at 85% 0%,rgba(255,40,56,.07),transparent 58%),
-    radial-gradient(ellipse 700px 600px at 5% 40%,rgba(56,112,208,.06),transparent 55%),
+    radial-gradient(ellipse 1000px 600px at 90% -5%,rgba(200,16,46,.14),transparent 55%),
+    radial-gradient(ellipse 800px 800px at 0% 35%,rgba(0,61,165,.18),transparent 55%),
+    radial-gradient(ellipse 600px 400px at 50% 100%,rgba(200,160,32,.06),transparent 60%),
     var(--bg);
   color:var(--t0);
   font-family:'Barlow',system-ui,sans-serif;
@@ -96,7 +97,7 @@ header.app{
 }
 .ball{
   width:36px;height:36px;border-radius:var(--rs);flex:none;
-  background:linear-gradient(145deg,#0D1E58,#1740A0);
+  background:linear-gradient(145deg,#002880,#003DA5);
   display:grid;place-items:center;
   border:1px solid rgba(232,160,32,.25);
   box-shadow:0 2px 10px rgba(0,0,0,.5);
@@ -135,7 +136,7 @@ header.app{
 .kpi:hover{border-color:var(--b1)}
 .kpi .n{font-size:1.8rem;font-weight:800;font-variant-numeric:tabular-nums;font-family:'Barlow Condensed',sans-serif;line-height:1;display:block}
 .kpi .l{font-size:.6rem;color:var(--t2);text-transform:uppercase;letter-spacing:.9px;display:block;font-weight:600;font-family:'Barlow Condensed',sans-serif}
-.kpi.klive .n{font-size:2.6rem;color:var(--red);text-shadow:0 0 24px rgba(255,40,56,.3)}
+.kpi.klive .n{font-size:2.6rem;color:var(--red);text-shadow:0 0 24px rgba(200,16,46,.35)}
 .kpi.kday .n{color:var(--gold)}
 .kpi.knext .n{color:var(--blue2)}
 
@@ -225,13 +226,13 @@ section.panel{min-width:0}
 .match.live{
   background:var(--s1);
   border-color:rgba(255,40,56,.3);
-  box-shadow:0 2px 20px rgba(255,40,56,.12),0 2px 8px rgba(0,0,0,.4);
+  box-shadow:0 2px 20px rgba(200,16,46,.14),0 2px 8px rgba(0,0,0,.4);
 }
 .match.live::before{
   content:"";display:block;height:2px;
-  background:linear-gradient(90deg,var(--red) 0%,rgba(255,40,56,.4) 55%,transparent 100%);
+  background:linear-gradient(90deg,var(--red) 0%,rgba(200,16,46,.4) 55%,transparent 100%);
 }
-.match.live:hover{border-color:rgba(255,40,56,.5);box-shadow:0 8px 30px rgba(255,40,56,.18),0 4px 16px rgba(0,0,0,.5);transform:translateY(-1px)}
+.match.live:hover{border-color:rgba(200,16,46,.5);box-shadow:0 8px 30px rgba(200,16,46,.2),0 4px 16px rgba(0,0,0,.5);transform:translateY(-1px)}
 
 .match .top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 14px 0}
 .match .meta{font-size:.62rem;color:var(--t2);display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace}
@@ -261,7 +262,7 @@ section.panel{min-width:0}
   text-shadow:0 0 28px rgba(255,40,56,.45);
   animation:scoreGlow 2.8s ease-in-out infinite;
 }
-@keyframes scoreGlow{0%,100%{text-shadow:0 0 12px rgba(255,40,56,.25)}50%{text-shadow:0 0 32px rgba(255,40,56,.7)}}
+@keyframes scoreGlow{0%,100%{text-shadow:0 0 14px rgba(200,16,46,.3)}50%{text-shadow:0 0 36px rgba(200,16,46,.75)}}
 .match.finished .score:not(.vs){color:var(--t1)}
 .match.scheduled .score:not(.vs){color:var(--t2);font-size:2rem}
 
@@ -272,7 +273,7 @@ section.panel{min-width:0}
 
 /* ── BADGES — real badges, real weight ── */
 .badge{font-size:.62rem;font-weight:700;padding:4px 10px;border-radius:var(--rs);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;font-family:'Barlow Condensed',sans-serif}
-.badge.live{background:var(--red);color:#fff;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 12px rgba(255,40,56,.5)}
+.badge.live{background:var(--red);color:#fff;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 12px rgba(200,16,46,.5)}
 .badge.live::before{content:"";width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.9);animation:pulse 1.1s infinite}
 .badge.fin{background:rgba(255,255,255,.05);color:var(--t2);border:1px solid var(--b1)}
 .badge.sched{background:rgba(56,112,208,.14);color:var(--blue2);border:1px solid rgba(56,112,208,.25)}
