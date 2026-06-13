@@ -191,6 +191,7 @@ tr.q3 .pos{background:rgba(232,168,32,.2);color:var(--warn)}
 .det-bar-row{grid-column:1/-1;padding:0 2px 4px}
 .det-bar-bg{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
 .det-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),rgba(197,160,40,.4));border-radius:2px;transition:width .7s ease .1s}
+.det-no-goals{font-size:.8rem;color:var(--dim);padding:8px 10px;background:rgba(255,255,255,.03);border-radius:7px;text-align:center;line-height:1.6}
 .det-loading,.det-empty{text-align:center;color:var(--mute);font-size:.8rem;padding:20px;font-style:italic}
 .match-expand-hint{font-size:.68rem;color:var(--mute);margin-top:8px;text-align:center;letter-spacing:.3px;transition:color .2s;display:flex;align-items:center;justify-content:center;gap:3px}
 .match:hover .match-expand-hint{color:var(--dim)}
@@ -735,24 +736,29 @@ function renderDetail(d,m){
   const narrativeHtml=narrative
     ?`<p class="det-narrative">${narrative}</p>`:"";
 
-  /* Tore-Liste */
-  const goalsHtml=goals.length?`
-    <div class="det-section-label">Tore</div>
-    <div class="det-goals-list">
-      ${goals.map(g=>{
-        const isHome=g.team===m.a||(!g.team&&true);
-        const side=g.team?(g.team===m.a?"home":"away"):"home";
-        return`<div class="det-goal-row det-goal-${side}">
-          ${side==="home"?`<span class="dg-min">${g.min?g.min+"'":""}</span>${BALL_SVG}<span class="dg-player">${esc(g.player)}</span><span class="dg-team">${esc(TEAMS[g.team]?.n||g.team)}</span>`
+  /* Tore-Liste — immer rendern */
+  const totalGoals=(m.score?.a||0)+(m.score?.b||0);
+  let goalsBody="";
+  if(goals.length){
+    goalsBody=`<div class="det-goals-list">${goals.map(g=>{
+      const side=g.team?(g.team===m.a?"home":"away"):"home";
+      return`<div class="det-goal-row det-goal-${side}">
+        ${side==="home"
+          ?`<span class="dg-min">${g.min?g.min+"'":""}</span>${BALL_SVG}<span class="dg-player">${esc(g.player)}</span><span class="dg-team">${esc(TEAMS[g.team]?.n||g.team)}</span>`
           :`<span class="dg-team">${esc(TEAMS[g.team]?.n||g.team)}</span><span class="dg-player">${esc(g.player)}</span>${BALL_SVG}<span class="dg-min">${g.min?g.min+"'":""}</span>`}
-        </div>`;
-      }).join("")}
-    </div>`:"";
+      </div>`;
+    }).join("")}</div>`;
+  } else if(totalGoals===0){
+    goalsBody=`<div class="det-no-goals">Kein Tor erzielt</div>`;
+  } else {
+    goalsBody=`<div class="det-no-goals">${m.score.a>0?`${esc(m.aName)} ${m.score.a}×`:""} ${m.score.b>0?`· ${esc(m.bName)} ${m.score.b}×`:""}<br><span style="font-size:.72rem;color:var(--mute)">Torschützen von ESPN nicht bereitgestellt</span></div>`;
+  }
+  const goalsHtml=`<div class="det-section-label">Tore</div>${goalsBody}`;
 
   const statsHtml=rows
     ?`<div class="det-section-label">Statistik</div><div class="det-stats">${rows}</div>`:"";
 
-  if(!narrative&&!goals.length&&!rows) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
+  if(!narrative&&!rows) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
 
   return`<div class="det-inner">
     ${narrativeHtml}
