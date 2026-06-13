@@ -329,8 +329,8 @@ footer.app{margin-top:28px;text-align:center;font-size:.72rem;color:var(--mute);
 </div>
 
 <footer class="app">
-  WM 2026 Live-Spielplan · API-Football (v3.football.api-sports.io · league=1 · season=2026) ·
-  Zeiten in MESZ (Europe/Vienna) · API-Key wird nur lokal gespeichert.
+  WM 2026 Live-Spielplan · ESPN Public API · kein API-Key nötig ·
+  Zeiten in MESZ (Europe/Vienna) · Stadion-Lokalzeit in lok. Ortszeit
 </footer>
 </div>
 
@@ -370,6 +370,23 @@ const EN2={
   "Colombia":"COL","Portugal":"POR","Uzbekistan":"UZB","Congo DR":"COD","DR Congo":"COD",
   "England":"ENG","Ghana":"GHA","Croatia":"CRO","Panama":"PAN"
 };
+
+/* WM 2026 Stadien → IANA-Zeitzonen */
+const VENUE_TZ={
+  "Estadio Azteca":"America/Mexico_City","Estadio Akron":"America/Mexico_City","Estadio BBVA":"America/Mexico_City",
+  "AT&T Stadium":"America/Chicago","Arrowhead Stadium":"America/Chicago","NRG Stadium":"America/Chicago",
+  "MetLife Stadium":"America/New_York","Lincoln Financial Field":"America/New_York","Hard Rock Stadium":"America/New_York",
+  "Empower Field":"America/Denver",
+  "SoFi Stadium":"America/Los_Angeles","Levi's Stadium":"America/Los_Angeles","Rose Bowl":"America/Los_Angeles","Lumen Field":"America/Los_Angeles",
+  "BC Place":"America/Vancouver","BMO Field":"America/Toronto"
+};
+function venueLocalTime(venue,date,time){
+  if(!venue) return"";
+  const tz=Object.entries(VENUE_TZ).find(([k])=>venue.includes(k))?.[1];
+  if(!tz) return"";
+  const dt=new Date(date+"T"+time+":00+02:00");
+  return dt.toLocaleTimeString("de-DE",{timeZone:tz,hour:"2-digit",minute:"2-digit"});
+}
 
 /* ============================================================
    2. MOCK-DATEN
@@ -495,8 +512,34 @@ async function fetchLiveEvents(id){
   return MATCHES.find(x=>x.id===id)?.events||[];
 }
 
-/* fetchStandings() – ESPN Standings nicht verfügbar → lokale Berechnung */
-async function fetchStandings(){return null;}
+/* fetchStandings() – ESPN Gruppen-Tabelle (live), Fallback: lokale Berechnung */
+async function fetchStandings(){
+  const c=cG("st");if(c) return c;
+  try{
+    const d=await fetch(ESPN+"/standings").then(r=>r.json());
+    const groups=d.children||[];
+    if(!groups.length) return null;
+    const tbl={};
+    groups.forEach(grp=>{
+      const letter=(grp.name||"").replace(/Group /i,"").trim();
+      if(!letter) return;
+      const entries=grp.standings?.entries||[];
+      tbl[letter]=entries.map(e=>{
+        const dn=e.team?.displayName||e.team?.name||"";
+        const code=EN2[dn]||e.team?.abbreviation||null;
+        const stats={};(e.stats||[]).forEach(s=>{stats[s.name]=s.value;stats[s.abbreviation]=s.value;});
+        return{team:code||dn,logo:e.team?.logos?.[0]?.href||null,
+          sp:stats.gamesPlayed??stats.GP??0,
+          s:stats.wins??stats.W??0,u:stats.ties??stats.T??0,n:stats.losses??stats.L??0,
+          t:stats.pointsFor??stats.GF??0,gt:stats.pointsAgainst??stats.GA??0,
+          td:stats.pointDifferential??stats.GD??0,p:stats.points??stats.PTS??0};
+      });
+    });
+    const hasData=Object.values(tbl).some(g=>g.some(r=>r.sp>0));
+    if(hasData){cS("st",tbl,5*60*1000);return tbl;}
+    return null;
+  }catch(e){console.warn("fetchStandings:",e);return null;}
+}
 
 /* ============================================================
    5. MAPPER
@@ -638,9 +681,11 @@ function mCard(m){
     :`<span class="badge sched">${m.time} Uhr</span>`;
   const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">${m.time}</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
+  const localT=m.venue?venueLocalTime(m.venue,m.date,m.time):"";
   const dateLabel=new Date(m.date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
   const kickoff=m.status==="finished"?`<span>${m.time} Uhr</span>`:"";
-  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span style="font-weight:700;color:var(--txt)">${dateLabel}</span>${kickoff}${place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}</span>`:""}</div>`;
+  const venueHtml=place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}${localT?`<span style="color:var(--green);font-weight:600"> · ${localT} lok.</span>`:""}</span>`:"";
+  const meta=`<div class="meta"><span class="grp">Grp ${esc(m.group)}</span><span style="font-weight:700;color:var(--txt)">${dateLabel}</span>${kickoff}${venueHtml}</div>`;
   const goals=m.events.filter(e=>e.type==="goal");
   const evH=goals.length?`<div class="evmini">${goals.map(e=>`<div class="ei"><span class="em">${e.min}'</span>⚽ ${esc(e.player)}<span style="color:var(--mute)"> (${esc(e.teamName||TEAMS[e.team]?.n||e.team)})</span></div>`).join("")}</div>`:"";
   const canExpand=m.status==="finished"||m.status==="live";
@@ -669,19 +714,57 @@ async function fetchMatchSummary(apiId){
 
 const BALL_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10" fill="rgba(197,160,40,.15)" stroke="var(--green)" stroke-width="1.5"/><path d="M12 6l1.8 3.5L17.5 10l-2.8 2.7.7 3.8L12 14.8l-3.4 1.7.7-3.8L6.5 10l3.7-.5z" fill="var(--green)" opacity=".8"/></svg>`;
 
-function buildNarrative(m,goals){
+function buildNarrative(m,goals,hStats,aStats){
   if(!m.score) return"";
   const sa=m.score.a,sb=m.score.b;
-  const winner=sa>sb?m.aName:sb>sa?m.bName:null;
-  let txt=winner
-    ?`${esc(winner)} gewann die Partie mit ${sa}:${sb} gegen ${esc(sa>sb?m.bName:m.aName)}.`
-    :`Das Spiel endete mit einem Unentschieden – ${sa}:${sb}.`;
-  if(sa===0&&sb===0) txt=`Torloses Remis zwischen ${esc(m.aName)} und ${esc(m.bName)}.`;
+  const margin=Math.abs(sa-sb);
+  const winner=sa>sb?"home":sb>sa?"away":null;
+  const winName=winner==="home"?m.aName:winner==="away"?m.bName:null;
+  const loseName=winner==="home"?m.bName:winner==="away"?m.aName:null;
+  const parts=[];
+  /* Ergebnis */
+  if(winner){
+    const adj=margin>=3?"deutlich":margin===2?"klar":"knapp";
+    parts.push(`${esc(winName)} gewann ${adj} mit ${sa}:${sb} gegen ${esc(loseName)}.`);
+  }else{
+    parts.push(sa===0
+      ?`${esc(m.aName)} und ${esc(m.bName)} trennten sich torlos – kein Team fand den Weg ins Netz.`
+      :`${esc(m.aName)} und ${esc(m.bName)} teilten sich die Punkte in einem ${sa}:${sb}.`);
+  }
+  /* Ballbesitz */
+  const hPoss=parseFloat(hStats?.possessionPct)||0;
+  const aPoss=parseFloat(aStats?.possessionPct)||0;
+  if(hPoss>0||aPoss>0){
+    const domPct=Math.max(hPoss,aPoss);
+    const domTeam=hPoss>=aPoss?m.aName:m.bName;
+    if(domPct>=62) parts.push(`${esc(domTeam)} dominierte das Mittelfeld mit ${domPct}% Ballbesitz.`);
+    else if(domPct>=55) parts.push(`${esc(domTeam)} hatte mit ${domPct}% leicht mehr Spielkontrolle.`);
+    else parts.push("Ausgeglichenes Spiel mit nahezu gleichem Ballbesitz.");
+  }
+  /* Schüsse */
+  const hSh=parseInt(hStats?.shotsTotal)||0,aSh=parseInt(aStats?.shotsTotal)||0;
+  const hSoT=parseInt(hStats?.shotsOnTarget)||0,aSoT=parseInt(aStats?.shotsOnTarget)||0;
+  if(hSh+aSh>0){
+    const moreTeam=hSh>aSh?m.aName:aSh>hSh?m.bName:null;
+    const diff=Math.abs(hSh-aSh);
+    const totSh=Math.max(hSh,aSh),totSoT=hSh>=aSh?hSoT:aSoT;
+    if(moreTeam&&diff>=4) parts.push(`${esc(moreTeam)} war mit ${totSh} Schüssen (${totSoT} aufs Tor) klar gefährlicher.`);
+    else if(moreTeam&&diff>=2) parts.push(`${esc(moreTeam)} versuchte es öfter: ${totSh} Schüsse, davon ${totSoT} auf das Tor.`);
+  }
+  /* Überraschungs-Ergebnis */
+  if(winner&&(hPoss>0||aPoss>0)){
+    const domWon=(hPoss>aPoss&&winner==="home")||(aPoss>hPoss&&winner==="away");
+    if(!domWon&&Math.max(hPoss,aPoss)>=58){
+      const domTeam=hPoss>=aPoss?m.aName:m.bName;
+      parts.push(`${esc(domTeam)} hatte mehr Ballbesitz, musste sich aber trotzdem geschlagen geben.`);
+    }
+  }
+  /* Torschützen */
   if(goals.length){
     const names=goals.map(g=>`${esc(g.player)}${g.min?" ("+g.min+"')":""}`);
-    txt+=` Torschützen: ${names.join(", ")}.`;
+    parts.push(goals.length===1?`Torschütze: ${names[0]}.`:`Torschützen: ${names.join(", ")}.`);
   }
-  return txt;
+  return parts.join(" ");
 }
 
 function renderDetail(d,m){
@@ -732,7 +815,7 @@ function renderDetail(d,m){
   }
 
   /* Narrativer Text */
-  const narrative=buildNarrative(m,goals);
+  const narrative=buildNarrative(m,goals,hStats,aStats);
   const narrativeHtml=narrative
     ?`<p class="det-narrative">${narrative}</p>`:"";
 
