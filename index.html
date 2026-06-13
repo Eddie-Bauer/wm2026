@@ -242,7 +242,8 @@ section.panel{min-width:0}
 .row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:10px 14px 13px}
 .team{display:flex;align-items:center;gap:9px;min-width:0}
 .team.b{flex-direction:row-reverse;text-align:right}
-.ti{width:26px;height:26px;object-fit:contain;flex:none;border-radius:3px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.ti{width:26px;height:26px;object-fit:contain;border-radius:3px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));vertical-align:middle}
+.row .ti{flex:none}
 .flag{font-size:1.2rem;line-height:1;flex:none}
 .tname{font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px;text-transform:uppercase;color:var(--t0)}
 
@@ -306,20 +307,73 @@ aside.ticker{background:var(--s0);border:1px solid var(--b0);border-radius:var(-
 @keyframes flashin{from{background:rgba(232,160,32,.2)}to{background:transparent}}
 
 /* ── STANDINGS / GROUPS ── */
-.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:10px}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
 .gcard{background:var(--s0);border:1px solid var(--b0);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);transition:border-color .15s}
 .gcard:hover{border-color:var(--b1)}
-.gcard h3{font-size:.68rem;padding:9px 13px;background:linear-gradient(135deg,var(--s1),var(--s0));border-bottom:1px solid var(--b0);display:flex;justify-content:space-between;align-items:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gold)}
-.gcard h3 small{color:var(--t2);font-weight:500;font-size:.6rem}
-table{width:100%;border-collapse:collapse;font-size:.78rem}
-thead th{font-size:.54rem;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;padding:6px 5px;text-align:center;border-bottom:1px solid var(--b0);font-family:'Barlow Condensed',sans-serif}
-thead th.tn{text-align:left;padding-left:11px}
-tbody td{padding:7px 5px;text-align:center;font-variant-numeric:tabular-nums;border-bottom:1px solid rgba(28,42,66,.6)}
+.gcard h3{
+  font-size:.72rem;padding:11px 14px;
+  background:linear-gradient(135deg,var(--s1),var(--s0));
+  border-bottom:2px solid var(--b1);
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;color:var(--gold);
+}
+.gcard h3 small{color:var(--t2);font-weight:500;font-size:.64rem;letter-spacing:0}
+
+/* table — clean, properly aligned */
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.8rem}
+colgroup .col-pos{width:32px}
+colgroup .col-team{width:auto}
+colgroup .col-stat{width:28px}
+colgroup .col-goals{width:44px}
+colgroup .col-pts{width:36px}
+thead tr{background:rgba(0,0,0,.15)}
+thead th{
+  font-size:.56rem;color:var(--t2);text-transform:uppercase;
+  letter-spacing:.5px;font-weight:700;
+  padding:8px 6px;text-align:center;
+  border-bottom:1px solid var(--b1);
+  font-family:'Barlow Condensed',sans-serif;
+  white-space:nowrap;
+}
+thead th.tn{text-align:left;padding-left:12px}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,.04)}
+tbody tr:nth-child(even){background:rgba(0,0,0,.12)}
+tbody tr:nth-child(even):hover{background:rgba(255,255,255,.04)}
+tbody td{
+  padding:9px 6px;text-align:center;
+  font-variant-numeric:tabular-nums;
+  border-bottom:1px solid rgba(30,48,96,.4);
+  vertical-align:middle;
+  white-space:nowrap;
+  font-size:.8rem;
+}
 tbody tr:last-child td{border-bottom:0}
-td.tn{text-align:left;padding-left:11px;display:flex;align-items:center;gap:6px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px}
-td.pts{font-weight:800;color:var(--gold);font-family:'Barlow Condensed',sans-serif}
-.pos{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:3px;font-size:.62rem;font-weight:700;background:var(--bg2);color:var(--t2);font-family:'IBM Plex Mono',monospace}
-tr.q1 .pos,tr.q2 .pos{background:rgba(232,160,32,.18);color:var(--gold)}
+
+/* team name cell — NO display:flex, use inline alignment */
+td.tn{
+  text-align:left;padding-left:12px;
+  font-weight:700;
+  font-family:'Barlow Condensed',sans-serif;
+  letter-spacing:.3px;
+  overflow:hidden;text-overflow:ellipsis;
+  vertical-align:middle;
+}
+td.tn .ti{width:18px;height:18px;vertical-align:middle;margin-right:6px;border-radius:2px;object-fit:contain}
+td.tn>span:first-child{display:inline-block;vertical-align:middle;margin-right:5px;font-size:1rem;line-height:1}
+
+td.pts{font-weight:800;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.88rem}
+
+.pos{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:3px;
+  font-size:.62rem;font-weight:700;
+  background:rgba(255,255,255,.07);color:var(--t2);
+  font-family:'IBM Plex Mono',monospace;
+  vertical-align:middle;
+}
+tr.q1 .pos,tr.q2 .pos{background:rgba(200,160,32,.2);color:var(--gold)}
 tr.q3 .pos{background:rgba(208,128,32,.15);color:var(--warn)}
 .glegend{display:flex;gap:12px;flex-wrap:wrap;font-size:.66rem;color:var(--t2);margin:0 0 10px}
 .glegend span{display:flex;align-items:center;gap:4px}
