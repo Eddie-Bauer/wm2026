@@ -67,6 +67,13 @@ header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:
 .kpi .l{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;display:block}
 .kpi.klive{border-top-color:var(--red)}.kpi.kday{border-top-color:var(--green)}.kpi.knext{border-top-color:var(--blue)}
 .kpi.klive .n{color:var(--red);text-shadow:0 0 16px rgba(200,16,46,.4)}.kpi.kday .n{color:var(--green)}.kpi.knext .n{color:var(--blue)}
+.kpis2{margin-top:-4px}
+.kpis2 .kpi{padding:12px 18px;gap:7px}
+.kpis2 .kpi .n{font-size:1.3rem}
+.kpi.kgoals{border-top-color:var(--green)}.kpi.kgoals .n{color:var(--green)}
+.kpi.kyellow{border-top-color:var(--warn)}.kpi.kyellow .n{color:var(--warn)}
+.kpi.kred2{border-top-color:var(--red)}.kpi.kred2 .n{color:#F04060}
+.kpi.kavg .n{color:var(--blue)}
 
 /* TABS */
 nav.tabs{display:flex;gap:6px;background:rgba(12,22,38,0.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:5px;margin-bottom:16px;overflow-x:auto}
@@ -260,6 +267,12 @@ footer.app{margin-top:28px;text-align:center;font-size:.72rem;color:var(--mute);
   <div class="kpi klive"><span class="n" id="kLive">0</span><span class="l">Live</span></div>
   <div class="kpi"><span class="n" id="kFin">0</span><span class="l">Beendet</span></div>
   <div class="kpi knext"><span class="n" id="kNext">0</span><span class="l">Geplant</span></div>
+</div>
+<div class="kpis kpis2">
+  <div class="kpi kgoals"><span class="n" id="kGoals">–</span><span class="l">Tore gesamt</span></div>
+  <div class="kpi kyellow"><span class="n" id="kYellow">–</span><span class="l">Gelbe Karten</span></div>
+  <div class="kpi kred2"><span class="n" id="kRed">–</span><span class="l">Rote Karten</span></div>
+  <div class="kpi kavg"><span class="n" id="kAvg">–</span><span class="l">Ø Tore / Spiel</span></div>
 </div>
 
 <!-- TABS -->
@@ -630,8 +643,19 @@ function updateKPIs(){
   const today=todayStr();
   $("#kDay").textContent=MATCHES.filter(m=>m.date===today).length;
   $("#kLive").textContent=MATCHES.filter(m=>m.status==="live").length;
-  $("#kFin").textContent=MATCHES.filter(m=>m.status==="finished").length;
+  const finished=MATCHES.filter(m=>m.status==="finished");
+  $("#kFin").textContent=finished.length;
   $("#kNext").textContent=MATCHES.filter(m=>m.status==="scheduled").length;
+  /* Zeile 2 */
+  const totalGoals=finished.reduce((s,m)=>s+(m.score?.a||0)+(m.score?.b||0),0);
+  const allEvents=MATCHES.flatMap(m=>m.events||[]);
+  const yellows=allEvents.filter(e=>e.type==="yellow").length;
+  const reds=allEvents.filter(e=>e.type==="red").length;
+  const avg=finished.length>0?(totalGoals/finished.length).toFixed(1):"–";
+  $("#kGoals").textContent=totalGoals||"–";
+  $("#kYellow").textContent=yellows||"–";
+  $("#kRed").textContent=reds||"–";
+  $("#kAvg").textContent=avg;
 }
 function updateApiStatus(){
   const dot=$("#sdot"),lbl=$("#slabel");
