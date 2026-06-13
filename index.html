@@ -67,13 +67,19 @@ header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:
 .kpi .l{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;display:block}
 .kpi.klive{border-top-color:var(--red)}.kpi.kday{border-top-color:var(--green)}.kpi.knext{border-top-color:var(--blue)}
 .kpi.klive .n{color:var(--red);text-shadow:0 0 16px rgba(200,16,46,.4)}.kpi.kday .n{color:var(--green)}.kpi.knext .n{color:var(--blue)}
-.kpis2{margin-top:-4px}
-.kpis2 .kpi{padding:12px 18px;gap:7px}
-.kpis2 .kpi .n{font-size:1.3rem}
-.kpi.kgoals{border-top-color:var(--green)}.kpi.kgoals .n{color:var(--green)}
-.kpi.kyellow{border-top-color:var(--warn)}.kpi.kyellow .n{color:var(--warn)}
-.kpi.kred2{border-top-color:var(--red)}.kpi.kred2 .n{color:#F04060}
-.kpi.kavg .n{color:var(--blue)}
+/* FACTS BAR */
+.facts-bar{display:flex;background:rgba(8,16,30,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.06);border-radius:var(--rs);margin-bottom:16px;overflow:hidden}
+.fb-item{flex:1;display:flex;align-items:center;gap:10px;padding:12px 16px;border-right:1px solid rgba(255,255,255,.05);transition:background .2s ease;cursor:default}
+.fb-item:last-child{border-right:none}
+.fb-item:hover{background:rgba(255,255,255,.03)}
+.fb-ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none}
+.fb-ico.g{background:rgba(197,160,40,.12);box-shadow:inset 0 0 0 1px rgba(197,160,40,.2)}
+.fb-ico.y{background:rgba(232,168,32,.12);box-shadow:inset 0 0 0 1px rgba(232,168,32,.2)}
+.fb-ico.r{background:rgba(200,16,46,.12);box-shadow:inset 0 0 0 1px rgba(200,16,46,.2)}
+.fb-ico.a{background:rgba(30,106,212,.12);box-shadow:inset 0 0 0 1px rgba(30,106,212,.2)}
+.fb-val{font-size:1.2rem;font-weight:800;font-family:'Barlow Condensed',sans-serif;line-height:1.1}
+.fb-lbl{font-size:.63rem;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+@media(max-width:480px){.fb-item{padding:10px 10px;gap:7px}.fb-lbl{letter-spacing:0;font-size:.58rem}}
 
 /* TABS */
 nav.tabs{display:flex;gap:6px;background:rgba(12,22,38,0.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:5px;margin-bottom:16px;overflow-x:auto}
@@ -268,11 +274,23 @@ footer.app{margin-top:28px;text-align:center;font-size:.72rem;color:var(--mute);
   <div class="kpi"><span class="n" id="kFin">0</span><span class="l">Beendet</span></div>
   <div class="kpi knext"><span class="n" id="kNext">0</span><span class="l">Geplant</span></div>
 </div>
-<div class="kpis kpis2">
-  <div class="kpi kgoals"><span class="n" id="kGoals">–</span><span class="l">Tore gesamt</span></div>
-  <div class="kpi kyellow"><span class="n" id="kYellow">–</span><span class="l">Gelbe Karten</span></div>
-  <div class="kpi kred2"><span class="n" id="kRed">–</span><span class="l">Rote Karten</span></div>
-  <div class="kpi kavg"><span class="n" id="kAvg">–</span><span class="l">Ø Tore / Spiel</span></div>
+<div class="facts-bar">
+  <div class="fb-item">
+    <div class="fb-ico g"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(197,160,40,.9)" stroke-width="1.5"/><circle cx="12" cy="12" r="3.5" fill="rgba(197,160,40,.7)"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21" stroke="rgba(197,160,40,.5)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+    <div><div class="fb-val" id="kGoals" style="color:var(--green)">–</div><div class="fb-lbl">Tore gesamt</div></div>
+  </div>
+  <div class="fb-item">
+    <div class="fb-ico y"><svg width="11" height="15" viewBox="0 0 11 15"><rect width="11" height="15" rx="2" fill="rgba(232,168,32,.85)"/></svg></div>
+    <div><div class="fb-val" id="kYellow" style="color:var(--warn)">–</div><div class="fb-lbl">Gelbe Karten</div></div>
+  </div>
+  <div class="fb-item">
+    <div class="fb-ico r"><svg width="11" height="15" viewBox="0 0 11 15"><rect width="11" height="15" rx="2" fill="rgba(200,16,46,.85)"/></svg></div>
+    <div><div class="fb-val" id="kRed" style="color:#F04060">–</div><div class="fb-lbl">Rote Karten</div></div>
+  </div>
+  <div class="fb-item">
+    <div class="fb-ico a"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(30,106,212,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 8,11 13,14 19,7"/><line x1="19" y1="7" x2="19" y2="12"/><line x1="19" y1="7" x2="14" y2="7"/></svg></div>
+    <div><div class="fb-val" id="kAvg" style="color:var(--blue)">–</div><div class="fb-lbl">Ø Tore / Spiel</div></div>
+  </div>
 </div>
 
 <!-- TABS -->
