@@ -2281,6 +2281,7 @@ async function globalSync(){
   try{
     ["fx","fxStale","fxGuard","st","live"].forEach(k=>delete C[k]);
     MATCHES=await fetchMatches();
+    applyMockEvents();
     updateKPIs();updateApiStatus();
     renderSchedule();fillTickerSelect();renderTicker();
     if(state.view==="groups") renderGroups();
@@ -2343,9 +2344,19 @@ function bindUI(){
 /* ============================================================
    14. INIT
    ============================================================ */
+function applyMockEvents(){
+  /* Merge MOCK_SCRIPT events into MATCHES by team codes (ESPN IDs differ from mock IDs) */
+  Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{
+    const src=MOCK.find(x=>x.id===id);
+    if(!src) return;
+    const m=MATCHES.find(x=>x.a===src.a&&x.b===src.b);
+    if(m&&!m.events?.length) m.events=evs;
+  });
+}
 async function init(){
   clearTimeout(pollTimer);
   MATCHES=await fetchMatches();
+  applyMockEvents();
   updateKPIs();updateApiStatus();
   renderSchedule();fillTickerSelect();renderTicker();
   pollTimer=setTimeout(liveLoop,pollMs);
