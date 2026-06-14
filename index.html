@@ -1694,6 +1694,8 @@ const MOCK_SCRIPT={
     {min:88,type:"sub",team:"SUI",teamName:"Schweiz",player:"Zeki Amdouni kommt für Embolo"}
   ]
 };
+/* MOCK_SCRIPT-Events in MATCHES-Einträge einlesen */
+Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{const m=MATCHES.find(x=>x.id===id);if(m)m.events=evs;});
 
 /* ============================================================
    3. CACHE (In-Memory mit TTL)
