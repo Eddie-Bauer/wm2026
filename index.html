@@ -1377,13 +1377,22 @@ footer.app {
 }
 
 @media (max-width: 600px) {
-  /* Match rows: flag emoji weg, Score schmaler */
+  /* Match rows: kein nowrap, kleinere Schrift, flags weg */
   .flag { display: none; }
-  .score { min-width: 36px; padding: 2px 4px; }
-  .row { gap: 6px; }
-  .match.live .score:not(.vs) { font-size: 32px; min-width: 64px; }
-  .match.live .tname { font-size: 13px; }
+  .tname {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+  .team { align-items: center; gap: 5px; }
+  .ti { width: 16px; height: 16px; }
+  .score { min-width: 36px; padding: 2px 4px; font-size: 14px; }
+  .row { gap: 4px; }
+  .match.live .score:not(.vs) { font-size: 28px; min-width: 60px; }
+  .match.live .tname { font-size: 13px; white-space: normal; }
   .match.live .flag { display: none; }
+  .match.live .ti { width: 22px; height: 22px; }
 
   /* Groups: auto layout + scroll, kompakter */
   .groups { grid-template-columns: 1fr; }
