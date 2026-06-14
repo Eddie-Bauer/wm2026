@@ -408,7 +408,7 @@ nav#tabs button.active { color: var(--text); border-bottom-color: var(--red); }
 section.panel {
   min-width: 0;
   border-right: 1px solid var(--border);
-  padding-right: 0;
+  padding-right: 16px;
 }
 
 .panel h2 {
@@ -444,19 +444,17 @@ section.panel {
   display: flex;
   align-items: baseline;
   gap: 12px;
-}
-
-.daygroup:first-child .dayhead { margin-top: 10px; }
-
-/* JS generates .dayhead with text directly — style the entire element */
-.dayhead {
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
 }
+
+.daygroup:first-child .dayhead { margin-top: 10px; }
 
 .dayhead .dh-sub {
   font-family: var(--sans);
@@ -466,6 +464,15 @@ section.panel {
   margin-left: auto;
   letter-spacing: 0;
   text-transform: none;
+  flex-shrink: 0;  /* nie wegquetschen */
+  padding-left: 8px;
+}
+
+.dayhead > :first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 /* ─── MATCH ENTRIES — editorial 3-tier river ─────────────── */
@@ -497,7 +504,10 @@ section.panel {
   align-items: center;
   flex-wrap: wrap;
   font-variant-numeric: tabular-nums;
+  flex: 1;
+  min-width: 0;
 }
+
 
 .match .grp {
   font-family: var(--sans);
@@ -722,6 +732,7 @@ section.panel {
   padding: 3px 8px;
   white-space: nowrap;
   border-radius: 0;
+  flex-shrink: 0;
 }
 
 .badge.live {
