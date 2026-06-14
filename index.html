@@ -941,8 +941,33 @@ section.panel {
 .det-l { text-align: center; font-size: 9px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; padding: 0 4px; }
 
 .det-bar-row { grid-column: 1/-1; padding: 0 0 4px; }
-.det-bar-bg { height: 2px; background: var(--border2); }
-.det-bar-fill { height: 100%; background: var(--text); transition: width .7s ease .1s; }
+.det-bar-bg { height: 5px; background: var(--border2); border-radius: 2px; }
+.det-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .7s ease .1s; }
+
+/* Win probability bar (Live-Ticker) */
+.wp-bar {
+  padding: 8px 12px 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.wp-bar-track {
+  display: flex;
+  height: 5px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.wp-bar-home { background: var(--gold); transition: width .5s ease; }
+.wp-bar-away { background: var(--blue); flex: 1; }
+.wp-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+}
 
 .det-no-goals,
 .det-loading,
@@ -2130,14 +2155,16 @@ function buildNarrative(m,goals,hStats,aStats){
 }
 
 function renderDetail(d,m){
-  /* Stats: summary boxscore takes priority, scoreboard sbStats as fallback */
-  const teams=d.boxscore?.teams||[];
-  const home=teams.find(t=>t.homeAway==="home")||teams[0];
-  const away=teams.find(t=>t.homeAway==="away")||teams[1];
+  /* Stats: sbStats (scoreboard) as base, summary boxscore enhances if available */
   const hStats=Object.assign({},m.sbStats?.home||{});
   const aStats=Object.assign({},m.sbStats?.away||{});
-  (home?.statistics||[]).forEach(s=>hStats[s.name]=s.displayValue);
-  (away?.statistics||[]).forEach(s=>aStats[s.name]=s.displayValue);
+  if(d){
+    const teams=d.boxscore?.teams||[];
+    const home=teams.find(t=>t.homeAway==="home")||teams[0];
+    const away=teams.find(t=>t.homeAway==="away")||teams[1];
+    (home?.statistics||[]).forEach(s=>hStats[s.name]=s.displayValue);
+    (away?.statistics||[]).forEach(s=>aStats[s.name]=s.displayValue);
+  }
 
   const SHOW=[
     {k:"possessionPct",l:"Ballbesitz",pct:true},
@@ -2186,10 +2213,6 @@ function renderDetail(d,m){
   const att=m.attendance||0;
   const attHtml=att>0?`<div class="det-att">Zuschauer: ${att.toLocaleString("de-DE")}</div>`:"";
 
-  /* Narrative */
-  const narrative=buildNarrative(m,goals,hStats,aStats);
-  const narrativeHtml=narrative?`<p class="det-narrative">${narrative}</p>`:"";
-
   /* Goals list with OG / Pen labels */
   const goalsHtml=goals.length?`
     <div class="det-section-label">Tore</div>
@@ -2207,12 +2230,11 @@ function renderDetail(d,m){
   const statsHtml=rows
     ?`<div class="det-section-label">Statistik</div><div class="det-stats">${rows}</div>`:"";
 
-  if(!headlineText&&!narrative&&!rows&&!goals.length) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
+  if(!headlineText&&!rows&&!goals.length) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
 
   return`<div class="det-inner">
     ${headlineHtml}
     ${attHtml}
-    ${narrativeHtml}
     ${goalsHtml}
     ${statsHtml}
   </div>`;
@@ -2228,10 +2250,18 @@ function toggleDetail(id){
   const det=card.querySelector(".match-detail");
   if(!det||det.dataset.loaded) return;
   const m=MATCHES.find(x=>x.id===id);
-  if(!m?.apiId){det.innerHTML=`<div class="det-inner"><div class="det-empty">Keine Daten (Mock-Modus).</div></div>`;det.dataset.loaded="1";return;}
-  fetchMatchSummary(m.apiId)
-    .then(d=>{det.innerHTML=renderDetail(d,m);det.dataset.loaded="1";})
-    .catch(()=>{det.innerHTML=`<div class="det-inner"><div class="det-empty">Fehler beim Laden.</div></div>`;det.dataset.loaded="1";});
+  if(!m) return;
+  /* Render immediately from scoreboard data (no spinner needed for basic stats) */
+  det.innerHTML=renderDetail(null,m);
+  if(m.apiId){
+    /* Enhance in background with summary (adds saves, offsides, passes, etc.) */
+    fetchMatchSummary(m.apiId)
+      .then(d=>{det.innerHTML=renderDetail(d,m);})
+      .catch(()=>{})
+      .finally(()=>{det.dataset.loaded="1";});
+  } else {
+    det.dataset.loaded="1";
+  }
 }
 
 /* ============================================================
@@ -2306,7 +2336,27 @@ async function renderTicker(){
     ?`<div class="mm" style="color:var(--red);font-size:.72rem;font-weight:700;margin-top:3px">▶ ${m.minute||0}. Minute</div>`
     :m.status==="finished"?`<div class="mm" style="color:var(--mute);font-size:.72rem;margin-top:3px">Endstand</div>`
     :`<div class="mm" style="color:var(--blue);font-size:.72rem;margin-top:3px">Anstoß ${m.time} Uhr</div>`;
-  sc.innerHTML=`<div class="ss">${m.aFlag} ${esc(m.aName)} <span style="color:var(--mute)">${ss}</span> ${esc(m.bName)} ${m.bFlag}</div>${mmHtml}`;
+  /* Win probability bar (live matches only, fetched from summary) */
+  let wpHtml="";
+  if(m.status==="live"&&m.apiId){
+    try{
+      const sum=await fetchMatchSummary(m.apiId);
+      const wp=sum?.winProbability;
+      if(wp?.length){
+        const last=wp[wp.length-1];
+        const hp=Math.round((last.homeWinPercentage||0)*100);
+        const ap=Math.round((last.awayWinPercentage||0)*100);
+        wpHtml=`<div class="wp-bar">
+          <div class="wp-bar-track">
+            <div class="wp-bar-home" style="width:${hp}%"></div>
+            <div class="wp-bar-away"></div>
+          </div>
+          <div class="wp-bar-labels"><span>${esc(m.aName)} ${hp}%</span><span>${ap}% ${esc(m.bName)}</span></div>
+        </div>`;
+      }
+    }catch(e){}
+  }
+  sc.innerHTML=`<div class="ss">${m.aFlag} ${esc(m.aName)} <span style="color:var(--mute)">${ss}</span> ${esc(m.bName)} ${m.bFlag}</div>${mmHtml}${wpHtml}`;
   let evs=m.events||[];
   if(m.status==="live"||m.status==="finished"){
     const fresh=await fetchLiveEvents(m.id);
@@ -2334,8 +2384,12 @@ async function liveLoop(){
     const live=await fetchLiveFixtures();
     live.forEach(lf=>{
       const i=MATCHES.findIndex(m=>m.id===lf.id);
-      if(i>=0){const old=MATCHES[i];MATCHES[i]={...lf,events:old.events};}
-      else MATCHES.push({...lf,events:[]});
+      if(i>=0){
+        const old=MATCHES[i];
+        /* Use live events if more complete, otherwise keep existing */
+        const events=lf.events.length>=old.events.length?lf.events:old.events;
+        MATCHES[i]={...lf,events};
+      } else MATCHES.push(lf);
     });
     /* Alle Fixtures alle 5 min frisch laden */
     if(!cG("fxGuard")){
