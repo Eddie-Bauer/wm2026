@@ -1695,7 +1695,7 @@ const MOCK_SCRIPT={
   ]
 };
 /* MOCK_SCRIPT-Events in MATCHES-Einträge einlesen */
-Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{const m=MATCHES.find(x=>x.id===id);if(m)m.events=evs;});
+Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{const m=MOCK.find(x=>x.id===id);if(m)m.events=evs;});
 
 /* ============================================================
    3. CACHE (In-Memory mit TTL)
