@@ -43,6 +43,10 @@
   --blue:    #003DA5;      /* FIFA Blau — geplante Spiele */
   --warn:    #8a0050;      /* Primary Dark (Referenz --primary-dark) */
 
+  /* Shadows — 3 Ebenen */
+  --sh1: 0 1px 3px rgba(139,90,90,.10);
+  --sh2: 0 2px 8px rgba(139,90,90,.12), 0 1px 2px rgba(139,90,90,.08);
+
   /* JS inline-style Aliases */
   --txt:    var(--text);
   --mute2:  var(--mute);
@@ -344,19 +348,22 @@ nav#tabs button.active { color: var(--text); border-bottom-color: var(--red); }
 .ewrap {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 0 var(--gut) 60px;
+  padding: 16px var(--gut) 60px;
 }
 
-/* ─── FILTERS — editorial minimal ────────────────────────── */
+/* ─── CONTROL PANEL — Suche + Filter + Tabs vereint ──────── */
 
 .filters {
-  padding: 12px 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-bottom: 3px solid var(--rule);
+  padding: 12px 16px 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-bottom: 0;
+  margin-bottom: 16px;
+  box-shadow: var(--sh1);
 }
 
 .filters input[type=text],
@@ -400,15 +407,19 @@ nav#tabs button.active { color: var(--text); border-bottom-color: var(--red); }
 
 .gm {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 0;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
   align-items: start;
 }
 
+/* Ebene 2: Hauptcontainer */
 section.panel {
   min-width: 0;
-  border-right: 1px solid var(--border);
-  padding-right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--rule);
+  box-shadow: var(--sh2);
+  padding: 0;
 }
 
 .panel h2 {
@@ -418,7 +429,7 @@ section.panel {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mute);
-  padding: 10px 0 8px;
+  padding: 10px 16px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -433,28 +444,36 @@ section.panel {
   color: var(--mute);
 }
 
-/* ─── DAY HEADERS — editorial section openers ────────────── */
+/* ─── DAY BLOCKS — eigene Panel-Ebene ───────────────────── */
 
-.daygroup { margin-bottom: 0; }
+/* Ebene 3: Tagesblöcke als Cards */
+.daygroup {
+  margin: 12px 16px;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--border);
+  background: var(--surface);
+}
+
+.daygroup:first-child { margin-top: 16px; }
+.daygroup:last-child  { margin-bottom: 16px; }
 
 .dayhead {
-  border-top: 3px solid var(--rule);
-  padding: 9px 0 7px;
-  margin-top: 24px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 14px;
+  margin-top: 0;
   display: flex;
   align-items: baseline;
   gap: 12px;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text);
+  color: var(--dim);
   overflow: hidden;
   white-space: nowrap;
 }
-
-.daygroup:first-child .dayhead { margin-top: 10px; }
 
 .dayhead .dh-sub {
   font-family: var(--sans);
@@ -464,7 +483,7 @@ section.panel {
   margin-left: auto;
   letter-spacing: 0;
   text-transform: none;
-  flex-shrink: 0;  /* nie wegquetschen */
+  flex-shrink: 0;
   padding-left: 8px;
 }
 
@@ -475,16 +494,17 @@ section.panel {
   min-width: 0;
 }
 
-/* ─── MATCH ENTRIES — editorial 3-tier river ─────────────── */
+/* ─── MATCH ROWS — Row-Cards mit Hover ───────────────────── */
 
 .match {
   border-bottom: 1px solid var(--border2);
   cursor: pointer;
   transition: background .1s;
   position: relative;
+  padding: 0 14px;
 }
 
-.match:hover { background: rgba(0,0,0,.02); }
+.match:hover { background: var(--bg); }
 
 .match .top {
   display: flex;
@@ -539,7 +559,10 @@ section.panel {
   min-width: 0;
 }
 
-.team.b { justify-content: flex-end; }
+/* team.a: Logo nah am Score (rechts), Name außen links */
+.team.a { flex-direction: row-reverse; }
+/* team.b: Name nah am Score (links), Logo außen rechts */
+.team.b { }
 
 .ti {
   width: 20px;
@@ -597,9 +620,9 @@ section.panel {
 .match.live {
   border-bottom: 2px solid var(--border);
   border-left: 4px solid var(--red);
-  padding-left: 14px;
-  margin: 18px 0 0;
-  background: var(--surface);
+  padding: 0 14px 0 10px; /* override base match padding, 4px border eats 4px */
+  margin: 0;
+  background: #fff8f8; /* sehr leicht rosa getönt für Live */
 }
 
 .match.live .top { padding: 11px 0 0; }
@@ -915,14 +938,17 @@ section.panel {
 
 /* ─── TICKER — editorial Nachrichtenspalte ───────────────── */
 
+/* Ebene 2: Ticker als eigener Panel — deutlich getrennt */
 aside.ticker {
-  background: var(--surface);
-  border-left: 1px solid var(--border);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--dim);
+  box-shadow: var(--sh2);
   position: sticky;
-  top: 54px;
+  top: 70px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 54px);
+  max-height: calc(100vh - 70px);
   overflow: hidden;
 }
 
@@ -1374,14 +1400,14 @@ footer.app {
 /* ─── RESPONSIVE ─────────────────────────────────────────── */
 
 @media (max-width: 960px) {
-  .gm { grid-template-columns: 1fr; }
+  .gm { grid-template-columns: 1fr; gap: 12px; }
   aside.ticker {
     position: static;
     max-height: none;
     order: -1;
     top: 0;
-    border-left: none;
-    border-bottom: 3px solid var(--rule);
+    border-top: 3px solid var(--dim);
+    border-bottom: 1px solid var(--border);
   }
   .feed { max-height: 220px; }
   .match.live .score:not(.vs) { font-size: 42px; min-width: 90px; }
