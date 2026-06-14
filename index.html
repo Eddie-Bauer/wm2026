@@ -1377,9 +1377,23 @@ footer.app {
 }
 
 @media (max-width: 600px) {
-  .match.live .score:not(.vs) { font-size: 34px; min-width: 72px; }
+  /* Match rows: flag emoji weg, Score schmaler */
+  .flag { display: none; }
+  .score { min-width: 36px; padding: 2px 4px; }
+  .row { gap: 6px; }
+  .match.live .score:not(.vs) { font-size: 32px; min-width: 64px; }
   .match.live .tname { font-size: 13px; }
+  .match.live .flag { display: none; }
+
+  /* Groups: auto layout + scroll, kompakter */
   .groups { grid-template-columns: 1fr; }
+  .gcard { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .groups table { font-size: 10px; table-layout: auto; min-width: 320px; }
+  .groups tbody td { padding: 5px 4px; white-space: nowrap; }
+  .groups thead th { padding: 5px 4px; }
+  td.tn { min-width: 100px; max-width: 140px; }
+  td.tn > span:first-child { display: none; }   /* Flag-Emoji weg in Groups */
+
   .bracket { grid-template-columns: repeat(2, 1fr); }
   .filters { gap: 6px; }
   .eh-inner { gap: 0; }
