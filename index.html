@@ -413,9 +413,9 @@ section.panel {
 
 .panel h2 {
   font-family: var(--sans);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mute);
   padding: 10px 0 8px;
@@ -428,7 +428,7 @@ section.panel {
 
 .panel h2 .tag {
   font-family: var(--sans);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--mute);
 }
@@ -445,9 +445,9 @@ section.panel {
   align-items: baseline;
   gap: 12px;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text);
   overflow: hidden;
@@ -539,7 +539,7 @@ section.panel {
   min-width: 0;
 }
 
-.team.b { flex-direction: row-reverse; }
+.team.b { justify-content: flex-end; }
 
 .ti {
   width: 20px;
@@ -1916,7 +1916,7 @@ function mCard(m){
     ?`<span class="badge live">Live${m.minute?" · "+m.minute+"'":""}</span>`
     :m.status==="finished"?`<span class="badge fin">Beendet</span>`
     :`<span class="badge sched">${m.time} Uhr</span>`;
-  const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">${m.time}</div>`;
+  const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">–&nbsp;:&nbsp;–</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
   const localT=m.venue?venueLocalTime(m.venue,m.date,m.time):"";
   const dateLabel=new Date(m.date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
