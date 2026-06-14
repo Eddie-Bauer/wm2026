@@ -282,6 +282,8 @@ nav#tabs {
   display: flex;
   align-items: stretch;
   gap: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 nav#tabs button {
@@ -1554,10 +1556,47 @@ footer.app {
   .match.live .tname { font-size: 15px; }
   .eh-sub { display: none; }
   .eh-kpis { display: none; }
+  nav#tabs { top: 54px; position: sticky; z-index: 190; }
 }
 
 @media (max-width: 600px) {
-  /* Match rows: kein nowrap, kleinere Schrift, flags weg */
+  /* ── Header: kompakt, nur Wordmark + Dot + Buttons ── */
+  .eh-inner { height: 46px; padding: 0 12px; gap: 0; }
+  .eh-brand { padding-right: 12px; border-right: none; }
+  .eh-wordmark { font-size: 15px; }
+  .eh-sub { display: none; }
+  .eh-kpis { display: none; }
+  #apiStatus { padding: 0 10px; }
+  #slabel { display: none; }             /* nur Dot, kein Text */
+  #lastRefresh { display: none; }
+  .cd { display: none; }                 /* Datum weg, Uhrzeit bleibt */
+  .clock { padding: 0 10px; border-right: none; }
+  .ct { font-size: 12px; }
+  .ref-btn { padding: 0 10px; font-size: 11px; height: 46px; }
+  .theme-btn { padding: 0 10px; height: 46px; font-size: 13px; }
+
+  /* ── Nav tabs: volle Breite ── */
+  .en-inner { padding: 0; }
+  nav#tabs button { flex: 1; text-align: center; padding: 11px 8px; font-size: 10px; letter-spacing: 0.06em; }
+
+  /* ── Facts strip: kompakter ── */
+  .efacts-inner { padding: 5px 12px; gap: 0; }
+  .efact { padding: 0 10px 0 0; margin-right: 10px; font-size: 10px; }
+  .ef-val { font-size: 12px; }
+
+  /* ── Filters ── */
+  .ewrap { padding: 10px 10px 60px; }
+  .filters { padding: 8px 10px; gap: 6px; margin-bottom: 10px; }
+  .filters input[type=text] { flex: 1 1 120px; font-size: 12px; padding: 6px 10px; }
+  .filters select { font-size: 12px; padding: 6px 8px; }
+  .chip { padding: 5px 10px; font-size: 9px; }
+
+  /* ── Ticker: kleiner auf Mobile ── */
+  .feed { max-height: 160px; }
+  .tk-head { padding: 8px 12px; }
+  .tk-score { padding: 8px 12px; }
+
+  /* ── Match rows ── */
   .flag { display: none; }
   .tname {
     white-space: normal;
@@ -1569,24 +1608,30 @@ footer.app {
   .ti { width: 16px; height: 16px; }
   .score { min-width: 36px; padding: 2px 4px; font-size: 14px; }
   .row { gap: 4px; }
+  .match { padding: 0 10px; }
+  .match.live { padding: 0 10px 0 7px; }
   .match.live .score:not(.vs) { font-size: 28px; min-width: 60px; }
   .match.live .tname { font-size: 13px; white-space: normal; }
   .match.live .flag { display: none; }
   .match.live .ti { width: 22px; height: 22px; }
+  .daygroup { margin: 8px 0; }
 
-  /* Groups: auto layout + scroll, kompakter */
+  /* ── Groups ── */
   .groups { grid-template-columns: 1fr; }
   .gcard { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .groups table { font-size: 10px; table-layout: auto; min-width: 320px; }
+  .groups table { font-size: 10px; table-layout: auto; min-width: 300px; }
   .groups tbody td { padding: 5px 4px; white-space: nowrap; }
   .groups thead th { padding: 5px 4px; }
   td.tn { min-width: 100px; max-width: 140px; }
-  td.tn > span:first-child { display: none; }   /* Flag-Emoji weg in Groups */
+  td.tn > span:first-child { display: none; }
 
+  /* ── KO ── */
   .ko-cards { grid-template-columns: repeat(2, 1fr) !important; }
   .ko-card-more { grid-column: 1 / -1; }
-  .filters { gap: 6px; }
-  .eh-inner { gap: 0; }
+  .ko-tname { font-size: 10px; }
+
+  /* sticky nav offset for mobile */
+  nav#tabs { top: 46px; }
 }
 </style>
 </head>
