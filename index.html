@@ -1694,8 +1694,6 @@ const MOCK_SCRIPT={
     {min:88,type:"sub",team:"SUI",teamName:"Schweiz",player:"Zeki Amdouni kommt für Embolo"}
   ]
 };
-/* MOCK_SCRIPT-Events in MATCHES-Einträge einlesen */
-Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{const m=MOCK.find(x=>x.id===id);if(m)m.events=evs;});
 
 /* ============================================================
    3. CACHE (In-Memory mit TTL)
@@ -1910,16 +1908,30 @@ function updateKPIs(){
   const finished=MATCHES.filter(m=>m.status==="finished");
   $("#kFin").textContent=finished.length;
   $("#kNext").textContent=MATCHES.filter(m=>m.status==="scheduled").length;
-  /* Zeile 2 */
   const totalGoals=finished.reduce((s,m)=>s+(m.score?.a||0)+(m.score?.b||0),0);
-  const allEvents=MATCHES.flatMap(m=>m.events||[]);
-  const yellows=allEvents.filter(e=>e.type==="yellow").length;
-  const reds=allEvents.filter(e=>e.type==="red").length;
   const avg=finished.length>0?(totalGoals/finished.length).toFixed(1):"–";
   $("#kGoals").textContent=totalGoals||"–";
-  $("#kYellow").textContent=yellows||"–";
-  $("#kRed").textContent=reds||"–";
   $("#kAvg").textContent=avg;
+}
+/* Fetch summaries for all finished matches and aggregate card stats from ESPN boxscore */
+async function updateCardKPIs(){
+  const finished=MATCHES.filter(m=>m.status==="finished"&&m.apiId);
+  if(!finished.length) return;
+  try{
+    const summaries=await Promise.all(finished.map(m=>fetchMatchSummary(m.apiId).catch(()=>null)));
+    let yellows=0,reds=0;
+    summaries.forEach(d=>{
+      if(!d) return;
+      (d.boxscore?.teams||[]).forEach(t=>{
+        (t.statistics||[]).forEach(s=>{
+          if(s.name==="yellowCards") yellows+=parseInt(s.displayValue)||0;
+          if(s.name==="redCards") reds+=parseInt(s.displayValue)||0;
+        });
+      });
+    });
+    $("#kYellow").textContent=yellows||"–";
+    $("#kRed").textContent=reds||"–";
+  }catch(e){console.warn("updateCardKPIs:",e);}
 }
 function updateApiStatus(){
   const dot=$("#sdot"),lbl=$("#slabel");
@@ -2281,10 +2293,10 @@ async function globalSync(){
   try{
     ["fx","fxStale","fxGuard","st","live"].forEach(k=>delete C[k]);
     MATCHES=await fetchMatches();
-    applyMockEvents();
     updateKPIs();updateApiStatus();
     renderSchedule();fillTickerSelect();renderTicker();
     if(state.view==="groups") renderGroups();
+    updateCardKPIs();
     const ts=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     const cnt=MATCHES.length;
     $("#lastRefresh").textContent=cnt?`⟳ ${ts} · ${cnt} Spiele (ESPN)`:`⟳ ${ts} · ⚠ 0 Spiele`;
@@ -2344,21 +2356,12 @@ function bindUI(){
 /* ============================================================
    14. INIT
    ============================================================ */
-function applyMockEvents(){
-  /* Merge MOCK_SCRIPT events into MATCHES by team codes (ESPN IDs differ from mock IDs) */
-  Object.entries(MOCK_SCRIPT).forEach(([id,evs])=>{
-    const src=MOCK.find(x=>x.id===id);
-    if(!src) return;
-    const m=MATCHES.find(x=>x.a===src.a&&x.b===src.b);
-    if(m&&!m.events?.length) m.events=evs;
-  });
-}
 async function init(){
   clearTimeout(pollTimer);
   MATCHES=await fetchMatches();
-  applyMockEvents();
   updateKPIs();updateApiStatus();
   renderSchedule();fillTickerSelect();renderTicker();
+  updateCardKPIs();
   pollTimer=setTimeout(liveLoop,pollMs);
 }
 
