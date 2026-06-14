@@ -1306,6 +1306,50 @@ tr.q3 .pos {
   color: var(--warn);
 }
 
+/* ─── INLINE GROUP TABLE (Spielplan-Filter) ─────────────── */
+
+.gi-wrap {
+  margin: 16px 0 8px;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--rule);
+  background: var(--surface);
+  box-shadow: var(--sh1);
+}
+.gi-head {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 14px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.gi-head small { font-size: 9px; font-weight: 600; color: var(--mute); letter-spacing: 0.04em; }
+.gi-table { width: 100%; table-layout: auto; border-collapse: collapse; font-family: var(--sans); font-size: 12px; }
+.gi-table thead th { padding: 6px 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mute); text-align: center; border-bottom: 1px solid var(--border); background: var(--bg2); }
+.gi-table th.tn, .gi-table td.tn { text-align: left; padding-left: 12px; min-width: 120px; }
+.gi-table tbody td { padding: 7px 8px; text-align: center; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+.gi-table tbody tr:last-child td { border-bottom: none; }
+.gi-table .pts { font-weight: 800; color: var(--text); }
+.gi-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mute);
+  letter-spacing: 0.03em;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+.gi-legend span { display: flex; align-items: center; gap: 5px; }
+
 /* ─── K.O. ──────────────────────────────────────────────── */
 
 .ko-note {
@@ -1720,6 +1764,7 @@ footer.app {
     <section class="panel">
       <h2>Spielplan &amp; Ergebnisse <span class="tag" id="mCount">–</span></h2>
       <div id="scheduleList"></div>
+      <div id="groupInline"></div>
     </section>
     <aside class="ticker">
       <div class="tk-head">
@@ -2165,15 +2210,40 @@ function renderSchedule(){
     return true;
   }).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   $("#mCount").textContent=items.length+" Spiele";
-  if(!items.length){list.innerHTML='<div class="empty-msg">Keine Spiele für diese Auswahl.</div>';return;}
-  const byDay={};items.forEach(m=>(byDay[m.date]??=[]).push(m));
-  list.innerHTML=Object.keys(byDay).sort().map(date=>{
-    const d=new Date(date+"T12:00:00");
-    const weekday=d.toLocaleDateString("de-DE",{weekday:"long"});
-    const rest=d.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
-    const cnt=byDay[date].length;
-    return`<div class="daygroup"><div class="dayhead">${weekday}, ${rest}<span class="dh-sub">${cnt} Spiel${cnt!==1?"e":""}</span></div>${byDay[date].map(mCard).join("")}</div>`;
-  }).join("");
+  if(!items.length){list.innerHTML='<div class="empty-msg">Keine Spiele für diese Auswahl.</div>';}
+  else{
+    const byDay={};items.forEach(m=>(byDay[m.date]??=[]).push(m));
+    list.innerHTML=Object.keys(byDay).sort().map(date=>{
+      const d=new Date(date+"T12:00:00");
+      const weekday=d.toLocaleDateString("de-DE",{weekday:"long"});
+      const rest=d.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
+      const cnt=byDay[date].length;
+      return`<div class="daygroup"><div class="dayhead">${weekday}, ${rest}<span class="dh-sub">${cnt} Spiel${cnt!==1?"e":""}</span></div>${byDay[date].map(mCard).join("")}</div>`;
+    }).join("");
+  }
+  /* Inline group table when a group is selected */
+  const gi=$("#groupInline");
+  if(state.group){
+    const tbl=STANDINGS||computeStandings(MATCHES);
+    const rows=tbl[state.group]||[];
+    const played=MATCHES.filter(m=>m.group===state.group&&m.status!=="scheduled").length;
+    gi.innerHTML=`<div class="gi-wrap">
+      <div class="gi-head">Gruppe ${esc(state.group)}<small>${played}/6 Spiele</small></div>
+      <table class="gi-table"><thead><tr><th>#</th><th class="tn">Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>TD</th><th>Pkt</th></tr></thead>
+      <tbody>${rows.map((r,i)=>{
+        const code=r.team,name=TEAMS[code]?.n||code,flag=TEAMS[code]?.f||"🏳️";
+        const safeLogo=r.logo&&/^https?:\/\//.test(r.logo)?r.logo:null;
+        const cls=i<2?"q"+(i+1):i===2?"q3":"";
+        return`<tr class="${cls}"><td><span class="pos">${i+1}</span></td>
+          <td class="tn">${safeLogo?`<img class="ti" src="${esc(safeLogo)}" alt="" style="width:20px;height:20px" onerror="this.style.display='none'">`:`<span>${flag}</span>`}${esc(name)}</td>
+          <td>${r.sp}</td><td>${r.s}</td><td>${r.u}</td><td>${r.n}</td>
+          <td>${r.t}:${r.gt}</td><td>${r.td>0?"+":""}${r.td}</td><td class="pts">${r.p}</td></tr>`;
+      }).join("")}</tbody></table>
+      <div class="gi-legend"><span><span class="lg q"></span>Platz 1–2: Qualifiziert</span><span><span class="lg t"></span>Platz 3: ggf. als bester Dritter</span></div>
+    </div>`;
+  } else {
+    gi.innerHTML="";
+  }
 }
 
 function mCard(m){
@@ -2388,6 +2458,7 @@ async function renderGroups(){
   const grid=$("#groupGrid");
   grid.innerHTML='<div class="empty-msg" style="grid-column:1/-1">Tabellen laden …</div>';
   const apiTbl=await fetchStandings();
+  if(apiTbl) STANDINGS=apiTbl;
   const tbl=apiTbl||computeStandings(MATCHES);
   grid.innerHTML=Object.keys(tbl).sort().map(g=>{
     const rows=tbl[g];
