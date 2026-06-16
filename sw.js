@@ -16,9 +16,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  /* Only intercept same-origin requests (not ESPN API calls) */
   if (!e.request.url.startsWith(self.location.origin)) return;
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  /* HTML: network-first — immer neueste Version, Fallback Cache wenn offline */
+  if (e.request.destination === 'document') {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
+  /* Assets (icon, manifest): cache-first */
+  e.respondWith(caches.match(e.request).then(c => c || fetch(e.request)));
 });
