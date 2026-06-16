@@ -2331,10 +2331,11 @@ function mCard(m){
     const sfx=e.ownGoal?" OG":e.penaltyKick?" Pen.":"";
     return`<div class="ei"><span class="em">${e.min}'</span>⚽ ${esc(e.player)}${sfx?`<span style="color:var(--mute);font-size:9px"> ${sfx}</span>`:""}<span style="color:var(--mute)"> (${esc(e.teamName||TEAMS[e.team]?.n||e.team)})</span></div>`;
   }).join("")}</div>`:"";
-  const canExpand=m.status==="finished"||m.status==="live";
-  const expandHint=canExpand?`<div class="match-expand-hint">Details<span class="expand-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></div>`:"";
-  const detailDiv=canExpand?`<div class="match-detail"><div class="det-loading">Lade Statistiken …</div></div>`:"";
-  const clickAttr=canExpand?`onclick="toggleDetail('${esc(m.id)}')" data-mid="${esc(m.id)}"`:""
+  const canExpand=true;
+  const expandLabel=m.status==="scheduled"?"Aufstellung":"Details";
+  const expandHint=`<div class="match-expand-hint">${expandLabel}<span class="expand-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></div>`;
+  const detailDiv=`<div class="match-detail"><div class="det-loading">Lade ${expandLabel} …</div></div>`;
+  const clickAttr=`onclick="toggleDetail('${esc(m.id)}')" data-mid="${esc(m.id)}"`
   const mCls=m.status==="live"?" live":m.status==="finished"?" finished":" scheduled";
   return`<div class="match${mCls}" ${clickAttr}>
     <div class="top">${meta}${badge}</div>
@@ -2536,7 +2537,7 @@ function buildLineupHtml(rosters,aName,bName){
     </div>`;
   }
 
-  return`<div class="det-lineup-hd" onclick="toggleLineup(this)">Aufstellung <span class="det-lineup-chevron">▸</span></div>
+  return`<div class="det-lineup-hd" onclick="event.stopPropagation();toggleLineup(this)">Aufstellung <span class="det-lineup-chevron">▸</span></div>
   <div class="det-lineup-body" style="display:none">
     <div class="lineup-cols">${side(home,aName)}${side(away,bName)}</div>
   </div>`;
@@ -2553,8 +2554,8 @@ function toggleDetail(id){
   if(!det||det.dataset.loaded) return;
   const m=MATCHES.find(x=>x.id===id);
   if(!m) return;
-  /* Render immediately from scoreboard data (no spinner needed for basic stats) */
-  det.innerHTML=renderDetail(null,m);
+  /* For live/finished: render immediately from scoreboard data, then enhance */
+  if(m.status!=="scheduled") det.innerHTML=renderDetail(null,m);
   if(m.apiId){
     /* Enhance in background with summary (adds saves, offsides, passes, etc.) */
     fetchMatchSummary(m.apiId)
