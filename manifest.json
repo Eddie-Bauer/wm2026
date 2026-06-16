@@ -1,0 +1,19 @@
+{
+  "name": "FIFA WM 2026",
+  "short_name": "WM 2026",
+  "description": "Live-Dashboard FIFA WM 2026 · ESPN · kein API-Key",
+  "start_url": "/wm2026/",
+  "scope": "/wm2026/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f0eb",
+  "theme_color": "#C8102E",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
