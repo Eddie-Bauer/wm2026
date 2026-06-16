@@ -957,6 +957,23 @@ section.panel {
 .det-stat:hover { background: rgba(0,0,0,.025); }
 .det-stat-teams { border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 2px; }
 .det-stat-teams .det-v { font-size: 11px; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Lineup accordion ── */
+.det-lineup-hd { display: flex; justify-content: space-between; align-items: center; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); padding: 10px 0 6px; border-top: 1px solid var(--border2); margin-top: 10px; cursor: pointer; user-select: none; }
+.det-lineup-hd:hover { color: var(--text); }
+.det-lineup-chevron { font-size: 11px; transition: transform .2s; }
+.det-lineup-hd.open .det-lineup-chevron { transform: rotate(90deg); }
+.lineup-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; padding-top: 6px; }
+.lineup-col-head { font-size: 10px; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: .06em; padding: 4px 0 6px; border-bottom: 1px solid var(--border2); margin-bottom: 4px; }
+.lp-section { font-size: 8.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding: 7px 0 3px; }
+.lp-row { display: grid; grid-template-columns: 18px 30px 1fr; align-items: baseline; gap: 3px; padding: 2px 0; font-size: 11.5px; }
+.lp-jersey { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--mute); font-size: 10px; }
+.lp-pos { font-size: 9px; font-weight: 600; color: var(--dim); }
+.lp-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-row.lp-sub .lp-name { color: var(--mute); font-size: 11px; }
+.lp-row.lp-bench .lp-name { color: var(--mute); font-size: 10.5px; opacity: .6; }
+.lp-replaces { color: var(--mute); font-size: 9.5px; }
+.lp-min { font-size: 9px; color: var(--mute); text-align: right; }
 .det-v { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 13px; color: var(--text); }
 .det-va { text-align: left; }
 .det-vb { text-align: right; }
@@ -2471,13 +2488,57 @@ function renderDetail(d,m){
   const statsHtml=rows
     ?`<div class="det-section-label">Statistik</div><div class="det-stats">${statsTeams}${rows}</div>`:"";
 
-  if(!headlineText&&!rows&&!goals.length) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
+  const lineupHtml=buildLineupHtml(d?.rosters,m.aName,m.bName);
+
+  if(!headlineText&&!rows&&!goals.length&&!lineupHtml) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
 
   return`<div class="det-inner">
     ${headlineHtml}
     ${attHtml}
     ${goalsHtml}
     ${statsHtml}
+    ${lineupHtml}
+  </div>`;
+}
+
+function toggleLineup(hd){
+  const body=hd.nextElementSibling;
+  const open=body.style.display!=="none";
+  body.style.display=open?"none":"block";
+  hd.classList.toggle("open",!open);
+}
+
+function buildLineupHtml(rosters,aName,bName){
+  if(!rosters?.length) return"";
+  const home=rosters.find(r=>r.homeAway==="home");
+  const away=rosters.find(r=>r.homeAway==="away");
+  if(!home&&!away) return"";
+
+  function side(roster,teamName){
+    if(!roster?.roster?.length) return`<div class="lineup-col"><div class="lineup-col-head">${esc(teamName)}</div><div class="lp-section" style="opacity:.5">Keine Daten</div></div>`;
+    const starters=[...roster.roster].filter(p=>p.starter).sort((a,b)=>(a.formationPlace||99)-(b.formationPlace||99));
+    const subsIn=roster.roster.filter(p=>!p.starter&&p.subbedIn);
+    const bench=roster.roster.filter(p=>!p.starter&&!p.subbedIn);
+
+    const playerRow=(p,cls="")=>{
+      const pos=p.position?.abbreviation||"";
+      const replaced=p.subbedOutFor?.athlete?.displayName||p.subbedOutFor?.displayName||"";
+      const replacedHtml=replaced?` <span class="lp-replaces">↓ ${esc(replaced)}</span>`:"";
+      return`<div class="lp-row${cls}"><span class="lp-jersey">${esc(String(p.jersey||""))}</span><span class="lp-pos">${esc(pos)}</span><span class="lp-name">${esc(p.displayName||p.fullName||"")}${replacedHtml}</span></div>`;
+    };
+
+    return`<div class="lineup-col">
+      <div class="lineup-col-head">${esc(teamName)}</div>
+      <div class="lp-section">Startelf</div>
+      ${starters.map(p=>playerRow(p)).join("")}
+      ${subsIn.length?`<div class="lp-section">Einwechslungen</div>${subsIn.map(p=>playerRow(p," lp-sub")).join("")}`:""}
+      ${bench.length?`<div class="lp-section">Bank</div>${bench.map(p=>playerRow(p," lp-bench")).join("")}`:""}
+    </div>`;
+  }
+
+  return`<div class="det-lineup-hd" onclick="toggleLineup(this)">Aufstellung <span class="det-lineup-chevron">▸</span></div>
+  <div class="det-lineup-body" style="display:none">
+    <div class="lineup-cols">${side(home,aName)}${side(away,bName)}</div>
   </div>`;
 }
 
