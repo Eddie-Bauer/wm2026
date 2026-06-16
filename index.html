@@ -2334,7 +2334,7 @@ function mCard(m){
   const canExpand=true;
   const expandLabel=m.status==="scheduled"?"Aufstellung":"Details";
   const expandHint=`<div class="match-expand-hint">${expandLabel}<span class="expand-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></div>`;
-  const detailDiv=`<div class="match-detail"><div class="det-loading">Lade ${expandLabel} …</div></div>`;
+  const detailDiv=`<div class="match-detail" onclick="event.stopPropagation()"><div class="det-loading">Lade ${expandLabel} …</div></div>`;
   const clickAttr=`onclick="toggleDetail('${esc(m.id)}')" data-mid="${esc(m.id)}"`
   const mCls=m.status==="live"?" live":m.status==="finished"?" finished":" scheduled";
   return`<div class="match${mCls}" ${clickAttr}>
@@ -2491,7 +2491,7 @@ function renderDetail(d,m){
 
   const lineupHtml=buildLineupHtml(d?.rosters,m.aName,m.bName);
 
-  if(!headlineText&&!rows&&!goals.length&&!lineupHtml) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
+  if(!headlineText&&!rows&&!goals.length&&!lineupHtml) return`<div class="det-inner"><div class="det-empty">${m.status==="scheduled"?"Aufstellung noch nicht verfügbar.":"Keine Details verfügbar."}</div></div>`;
 
   return`<div class="det-inner">
     ${headlineHtml}
@@ -2510,7 +2510,7 @@ function toggleLineup(hd){
 }
 
 function buildLineupHtml(rosters,aName,bName){
-  if(!rosters?.length) return"";
+  if(!rosters?.length) return`<div class="det-lineup-hd" style="cursor:default">Aufstellung <span style="font-size:9px;font-weight:400">noch nicht verfügbar</span></div>`;
   const home=rosters.find(r=>r.homeAway==="home");
   const away=rosters.find(r=>r.homeAway==="away");
   if(!home&&!away) return"";
@@ -2558,12 +2558,13 @@ function toggleDetail(id){
   /* For live/finished: render immediately from scoreboard data, then enhance */
   if(m.status!=="scheduled") det.innerHTML=renderDetail(null,m);
   if(m.apiId){
-    /* Enhance in background with summary (adds saves, offsides, passes, etc.) */
+    /* Enhance with summary (rosters, saves, offsides, passes, etc.) */
     fetchMatchSummary(m.apiId)
       .then(d=>{det.innerHTML=renderDetail(d,m);})
-      .catch(()=>{})
+      .catch(()=>{det.innerHTML=renderDetail(null,m);})
       .finally(()=>{det.dataset.loaded="1";});
   } else {
+    det.innerHTML=renderDetail(null,m);
     det.dataset.loaded="1";
   }
 }
