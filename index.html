@@ -1595,6 +1595,26 @@ footer.app {
 [data-theme="dark"] thead tr { background: var(--bg2); }
 [data-theme="dark"] .groups { background: var(--border); }
 
+/* ─── TORJÄGER ───────────────────────────────────────────── */
+#view-topscorers { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
+.ts-head { font-family: var(--serif); font-size: 1.1rem; font-weight: 700; color: var(--text); padding-bottom: 10px; border-bottom: 2px solid var(--dim); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: baseline; }
+.ts-head small { font-family: var(--sans); font-size: .72rem; font-weight: 400; color: var(--mute); }
+.ts-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.ts-row:first-of-type { border-top: 1px solid var(--border); }
+.ts-rank { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; background: var(--surface); color: var(--text); flex-shrink: 0; }
+.ts-rank.gold   { background: #C8960C; color: #fff; }
+.ts-rank.silver { background: #888; color: #fff; }
+.ts-rank.bronze { background: #A0522D; color: #fff; }
+.ts-flag { font-size: 1.4rem; flex-shrink: 0; }
+.ts-info { flex: 1; min-width: 0; }
+.ts-player { font-weight: 700; font-size: .9rem; color: var(--text); }
+.ts-team { font-size: .74rem; color: var(--mute); margin-top: 1px; }
+.ts-pen { font-size: .7rem; color: var(--mute); margin-left: 6px; font-weight: 400; }
+.ts-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; }
+.ts-bar-fill { height: 100%; background: var(--dim); border-radius: 2px; transition: width .3s; }
+.ts-goals { font-size: 1.6rem; font-weight: 800; color: var(--dim); flex-shrink: 0; min-width: 36px; text-align: right; font-family: var(--sans); }
+.ts-empty { padding: 32px; text-align: center; color: var(--mute); font-size: .85rem; }
+
 /* ─── RESPONSIVE ─────────────────────────────────────────── */
 
 @media (max-width: 960px) {
@@ -1686,6 +1706,12 @@ footer.app {
   .ko-card-more { grid-column: 1 / -1; }
   .ko-tname { font-size: 10px; }
 
+  /* ── Torjäger ── */
+  #view-topscorers { padding: 12px; }
+  .ts-row { gap: 8px; padding: 9px 10px; }
+  .ts-goals { font-size: 1.3rem; }
+  .ts-flag { font-size: 1.2rem; }
+
   /* sticky nav offset for mobile */
   nav#tabs { top: 46px; }
 }
@@ -1732,6 +1758,7 @@ footer.app {
     <button data-view="schedule" class="active">Spielplan</button>
     <button data-view="groups">Gruppen</button>
     <button data-view="ko">K.o.-Phase</button>
+    <button data-view="topscorers">Torjäger</button>
   </div>
 </nav>
 
@@ -1818,6 +1845,12 @@ footer.app {
     Paarungen stehen nach dem 28. Juni fest.
   </div>
   <div class="bracket" id="bracket"></div>
+</div>
+
+<!-- TORJÄGER -->
+<div id="view-topscorers" class="hidden">
+  <div class="ts-head">Torjäger <small>Eigentore nicht gewertet · Quelle: ESPN Scoreboard</small></div>
+  <div id="topScorers"></div>
 </div>
 
 <footer class="app">
@@ -2546,7 +2579,50 @@ function renderKO(){
 }
 
 /* ============================================================
-   11. LIVE-TICKER
+   11. TORJÄGER
+   ============================================================ */
+function computeTopScorers(){
+  const map={};
+  MATCHES.forEach(m=>{
+    (m.events||[]).forEach(e=>{
+      if(e.type!=="goal"||e.ownGoal) return;
+      const key=(e.player||"?")+"|"+(e.team||"?");
+      if(!map[key]) map[key]={player:e.player||"?",team:e.team||"?",teamName:e.teamName||TEAMS[e.team]?.n||e.team||"?",flag:TEAMS[e.team]?.f||"🏳️",goals:0,pens:0};
+      map[key].goals++;
+      if(e.penaltyKick) map[key].pens++;
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.goals-a.goals||a.player.localeCompare(b.player));
+}
+
+function renderTopScorers(){
+  const wrap=$("#topScorers");
+  if(!wrap) return;
+  const scorers=computeTopScorers();
+  if(!scorers.length){
+    wrap.innerHTML='<div class="ts-empty">Noch keine Tore erfasst — Daten kommen aus ESPN Scoreboard.</div>';
+    return;
+  }
+  const maxGoals=scorers[0].goals;
+  wrap.innerHTML=scorers.map((s,i)=>{
+    const rankCls=i===0?"ts-rank gold":i===1?"ts-rank silver":i===2?"ts-rank bronze":"ts-rank";
+    const bar=Math.round((s.goals/maxGoals)*100);
+    const penStr=s.pens?`<span class="ts-pen">(${s.pens} Pen.)</span>`:"";
+    return`<div class="ts-row">
+      <span class="${rankCls}">${i+1}</span>
+      <span class="ts-flag">${s.flag}</span>
+      <div class="ts-info">
+        <div class="ts-player">${esc(s.player)}${penStr}</div>
+        <div class="ts-team">${esc(s.teamName)}</div>
+        <div class="ts-bar"><div class="ts-bar-fill" style="width:${bar}%"></div></div>
+      </div>
+      <span class="ts-goals">${s.goals}</span>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   12. LIVE-TICKER
    ============================================================ */
 function fillTickerSelect(){
   const sel=$("#tkMatch");
@@ -2646,6 +2722,7 @@ async function liveLoop(){
   updateKPIs();updateApiStatus();
   if(state.view==="schedule") renderSchedule();
   if(state.view==="groups") renderGroups();
+  if(state.view==="topscorers") renderTopScorers();
   renderTicker();fillTickerSelect();
   $("#lastRefresh").textContent="↻ "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   pollTimer=setTimeout(liveLoop,pollMs);
@@ -2661,6 +2738,7 @@ async function globalSync(){
     updateKPIs();updateApiStatus();
     renderSchedule();fillTickerSelect();renderTicker();
     if(state.view==="groups") renderGroups();
+    if(state.view==="topscorers") renderTopScorers();
     updateCardKPIs();
     const ts=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     const cnt=MATCHES.length;
@@ -2681,8 +2759,10 @@ function setView(v){
   $("#view-schedule").classList.toggle("hidden",v!=="schedule");
   $("#view-groups").classList.toggle("hidden",v!=="groups");
   $("#view-ko").classList.toggle("hidden",v!=="ko");
+  $("#view-topscorers").classList.toggle("hidden",v!=="topscorers");
   if(v==="groups") renderGroups();
   if(v==="ko") renderKO();
+  if(v==="topscorers") renderTopScorers();
 }
 function startClock(){
   const tick=()=>{
