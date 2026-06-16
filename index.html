@@ -68,6 +68,18 @@
   --gut: 22px;
 }
 
+/* P3 wide-gamut: remap accent colours so they match the sRGB perceptual intent.
+   Without this, P3 displays show the hex values more vivid than designed. */
+@media (color-gamut: p3) {
+  :root {
+    --red:   color(display-p3 0.72 0.17 0.21);  /* #C8102E sRGB equivalent */
+    --gold:  color(display-p3 0.64 0.13 0.43);  /* #B3006A sRGB equivalent */
+    --green: color(display-p3 0.64 0.13 0.43);
+    --blue:  color(display-p3 0.09 0.24 0.62);  /* #003DA5 sRGB equivalent */
+    --warn:  color(display-p3 0.50 0.09 0.31);  /* #8a0050 sRGB equivalent */
+  }
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 
