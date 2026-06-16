@@ -949,6 +949,8 @@ section.panel {
 }
 
 .det-stat:hover { background: rgba(0,0,0,.025); }
+.det-stat-teams { border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 2px; }
+.det-stat-teams .det-v { font-size: 11px; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; }
 .det-v { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 13px; color: var(--text); }
 .det-va { text-align: left; }
 .det-vb { text-align: right; }
@@ -2294,7 +2296,7 @@ function renderSchedule(){
 function mCard(m){
   const badge=m.status==="live"
     ?`<span class="badge live">Live${m.minute?" · "+m.minute+"'":""}</span>`
-    :m.status==="finished"?`<span class="badge fin">Beendet</span>`
+    :m.status==="finished"?`<span class="badge fin">Beendet · ${m.time} Uhr</span>`
     :`<span class="badge sched">${m.time} Uhr</span>`;
   const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">–&nbsp;:&nbsp;–</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
@@ -2459,8 +2461,9 @@ function renderDetail(d,m){
       </div>`;
     }).join("")}</div>`:"";
 
+  const statsTeams=`<div class="det-stat det-stat-teams"><span class="det-v det-va">${esc(m.aName)}</span><span class="det-l"></span><span class="det-v det-vb">${esc(m.bName)}</span></div>`;
   const statsHtml=rows
-    ?`<div class="det-section-label">Statistik</div><div class="det-stats">${rows}</div>`:"";
+    ?`<div class="det-section-label">Statistik</div><div class="det-stats">${statsTeams}${rows}</div>`:"";
 
   if(!headlineText&&!rows&&!goals.length) return`<div class="det-inner"><div class="det-empty">Keine Details verfügbar.</div></div>`;
 
