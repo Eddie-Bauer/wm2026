@@ -2523,9 +2523,10 @@ function buildLineupHtml(rosters,aName,bName){
 
     const playerRow=(p,cls="")=>{
       const pos=p.position?.abbreviation||"";
+      const name=p.athlete?.displayName||p.athlete?.fullName||p.displayName||p.fullName||"";
       const replaced=p.subbedOutFor?.athlete?.displayName||p.subbedOutFor?.displayName||"";
       const replacedHtml=replaced?` <span class="lp-replaces">↓ ${esc(replaced)}</span>`:"";
-      return`<div class="lp-row${cls}"><span class="lp-jersey">${esc(String(p.jersey||""))}</span><span class="lp-pos">${esc(pos)}</span><span class="lp-name">${esc(p.displayName||p.fullName||"")}${replacedHtml}</span></div>`;
+      return`<div class="lp-row${cls}"><span class="lp-jersey">${esc(String(p.jersey||""))}</span><span class="lp-pos">${esc(pos)}</span><span class="lp-name">${esc(name)}${replacedHtml}</span></div>`;
     };
 
     return`<div class="lineup-col">
