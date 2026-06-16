@@ -964,12 +964,12 @@ section.panel {
 .det-lineup-chevron { font-size: 11px; transition: transform .2s; }
 .det-lineup-hd.open .det-lineup-chevron { transform: rotate(90deg); }
 .det-lineup-body { border: 1px solid var(--border); background: var(--surface); padding: 0 12px 12px; margin-bottom: 4px; }
-.lineup-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 0 12px; }
-.lineup-divider { background: var(--border2); margin: 12px 0; }
+.lineup-cols { display: grid; grid-template-columns: 1fr 1fr; }
+.lp-left { padding-right: 12px; border-right: 1px solid var(--border2); }
+.lp-right { padding-left: 12px; }
 .lineup-col-head { font-size: 10.5px; font-weight: 700; color: var(--text); letter-spacing: .02em; padding: 12px 0 8px; border-bottom: 2px solid var(--dim); margin-bottom: 6px; }
 .lp-section { font-size: 8px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); padding: 9px 0 4px; }
 .lp-row { display: grid; grid-template-columns: 20px 28px 1fr; align-items: baseline; gap: 2px; padding: 3px 0; font-size: 11.5px; border-bottom: 1px solid var(--border2); }
-.lp-row:last-child { border-bottom: none; }
 .lp-jersey { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--mute); font-size: 10px; text-align: center; }
 .lp-pos { font-size: 9px; font-weight: 600; color: var(--dim); }
 .lp-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2518,32 +2518,64 @@ function buildLineupHtml(rosters,aName,bName){
   const away=rosters.find(r=>r.homeAway==="away");
   if(!home&&!away) return"";
 
-  function side(roster,teamName){
-    if(!roster?.roster?.length) return`<div class="lineup-col"><div class="lineup-col-head">${esc(teamName)}</div><div class="lp-section" style="opacity:.5">Keine Daten</div></div>`;
-    const starters=[...roster.roster].filter(p=>p.starter).sort((a,b)=>(a.formationPlace||99)-(b.formationPlace||99));
-    const subsIn=roster.roster.filter(p=>!p.starter&&p.subbedIn);
-    const bench=roster.roster.filter(p=>!p.starter&&!p.subbedIn);
-
-    const playerRow=(p,cls="")=>{
-      const pos=p.position?.abbreviation||"";
-      const name=p.athlete?.displayName||p.athlete?.fullName||p.displayName||p.fullName||"";
-      const replaced=p.subbedOutFor?.athlete?.displayName||p.subbedOutFor?.displayName||"";
-      const replacedHtml=replaced?` <span class="lp-replaces">↓ ${esc(replaced)}</span>`:"";
-      return`<div class="lp-row${cls}"><span class="lp-jersey">${esc(String(p.jersey||""))}</span><span class="lp-pos">${esc(pos)}</span><span class="lp-name">${esc(name)}${replacedHtml}</span></div>`;
+  function getPlayers(roster){
+    if(!roster?.roster?.length) return{starters:[],subsIn:[],bench:[]};
+    const all=roster.roster;
+    return{
+      starters:[...all].filter(p=>p.starter).sort((a,b)=>(a.formationPlace||99)-(b.formationPlace||99)),
+      subsIn:all.filter(p=>!p.starter&&p.subbedIn),
+      bench:all.filter(p=>!p.starter&&!p.subbedIn)
     };
+  }
 
-    return`<div class="lineup-col">
-      <div class="lineup-col-head">${esc(teamName)}</div>
-      <div class="lp-section">Startelf</div>
-      ${starters.map(p=>playerRow(p)).join("")}
-      ${subsIn.length?`<div class="lp-section">Einwechslungen</div>${subsIn.map(p=>playerRow(p," lp-sub")).join("")}`:""}
-      ${bench.length?`<div class="lp-section">Bank</div>${bench.map(p=>playerRow(p," lp-bench")).join("")}`:""}
-    </div>`;
+  const pCell=(p,cls="")=>{
+    if(!p) return"";
+    const pos=p.position?.abbreviation||"";
+    const name=p.athlete?.displayName||p.athlete?.fullName||p.displayName||p.fullName||"";
+    const replaced=p.subbedOutFor?.athlete?.displayName||p.subbedOutFor?.displayName||"";
+    const replacedHtml=replaced?` <span class="lp-replaces">↓ ${esc(replaced)}</span>`:"";
+    return`<div class="lp-row${cls}"><span class="lp-jersey">${esc(String(p.jersey||""))}</span><span class="lp-pos">${esc(pos)}</span><span class="lp-name">${esc(name)}${replacedHtml}</span></div>`;
+  };
+
+  const pair=(left,right)=>`<div class="lp-left">${left}</div><div class="lp-right">${right}</div>`;
+
+  const h=getPlayers(home);
+  const a=getPlayers(away);
+
+  function renderSection(hList,aList,cls=""){
+    const len=Math.max(hList.length,aList.length);
+    let out="";
+    for(let i=0;i<len;i++) out+=pair(pCell(hList[i]||null,cls),pCell(aList[i]||null,cls));
+    return out;
+  }
+
+  let html=pair(
+    `<div class="lineup-col-head">${esc(aName)}</div>`,
+    `<div class="lineup-col-head">${esc(bName)}</div>`
+  );
+
+  html+=pair(`<div class="lp-section">Startelf</div>`,`<div class="lp-section">Startelf</div>`);
+  html+=renderSection(h.starters,a.starters);
+
+  if(h.subsIn.length||a.subsIn.length){
+    html+=pair(
+      h.subsIn.length?`<div class="lp-section">Einwechslungen</div>`:`<div class="lp-section"></div>`,
+      a.subsIn.length?`<div class="lp-section">Einwechslungen</div>`:`<div class="lp-section"></div>`
+    );
+    html+=renderSection(h.subsIn,a.subsIn," lp-sub");
+  }
+
+  if(h.bench.length||a.bench.length){
+    html+=pair(
+      h.bench.length?`<div class="lp-section">Bank</div>`:`<div class="lp-section"></div>`,
+      a.bench.length?`<div class="lp-section">Bank</div>`:`<div class="lp-section"></div>`
+    );
+    html+=renderSection(h.bench,a.bench," lp-bench");
   }
 
   return`<div class="det-lineup-hd" onclick="event.stopPropagation();toggleLineup(this)">Aufstellung <span class="det-lineup-chevron">▸</span></div>
   <div class="det-lineup-body" style="display:none">
-    <div class="lineup-cols">${side(home,aName)}<div class="lineup-divider"></div>${side(away,bName)}</div>
+    <div class="lineup-cols">${html}</div>
   </div>`;
 }
 
