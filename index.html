@@ -692,7 +692,6 @@ section.panel {
 }
 
 .match.live .evmini .ei { font-size: 11px; color: var(--dim); }
-.match.live .match-expand-hint { display: none; }
 
 /* ════ FINISHED — kompakte List-Row ══════════════════════════ */
 
@@ -986,31 +985,6 @@ section.panel {
 .det-bar-bg { height: 5px; background: var(--border2); border-radius: 2px; }
 .det-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .7s ease .1s; }
 
-/* Win probability bar (Live-Ticker) */
-.wp-bar {
-  padding: 8px 12px 4px;
-  border-top: 1px solid var(--border);
-  margin-top: 4px;
-}
-.wp-bar-track {
-  display: flex;
-  height: 5px;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-.wp-bar-home { background: var(--gold); transition: width .5s ease; }
-.wp-bar-away { background: var(--blue); flex: 1; }
-.wp-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--sans);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--mute);
-  letter-spacing: 0.04em;
-}
-
 .det-no-goals,
 .det-loading,
 .det-empty {
@@ -1022,47 +996,6 @@ section.panel {
   padding: 16px;
 }
 
-/* ─── TICKER — editorial Nachrichtenspalte ───────────────── */
-
-/* Ebene 2: Ticker als eigener Panel — deutlich getrennt */
-aside.ticker {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--dim);
-  box-shadow: var(--sh2);
-  position: sticky;
-  top: 70px;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 70px);
-  overflow: hidden;
-  min-width: 0;
-  width: 100%;
-}
-
-.tk-head {
-  padding: 12px 16px;
-  border-bottom: 3px solid var(--rule);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.tk-head .t {
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
 .ld {
   width: 6px;
   height: 6px;
@@ -1071,118 +1004,6 @@ aside.ticker {
   animation: pulse 1.1s infinite;
   flex: none;
 }
-
-.tk-head .ref-btn {
-  height: auto;
-  border: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  padding: 5px 10px;
-  font-size: 11px;
-}
-
-.tk-sel {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  display: flex;
-  gap: 5px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.tk-sel select {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 6px 8px;
-  font-size: 11px;
-  font-family: var(--sans);
-  outline: none;
-  border-radius: 0;
-  box-sizing: border-box;
-  min-width: 0;
-}
-
-.tk-sel select:first-child { flex: 1; min-width: 0; overflow: hidden; }
-.tk-sel select:last-child { width: 76px; flex-shrink: 0; }
-
-.tk-score {
-  padding: 12px 16px;
-  text-align: center;
-  border-bottom: 2px solid var(--border);
-  background: var(--bg2);
-  flex-shrink: 0;
-}
-
-.tk-score .ss {
-  font-family: var(--serif);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tk-score .mm {
-  font-family: var(--sans);
-  font-size: 9px;
-  font-weight: 700;
-  margin-top: 4px;
-  color: var(--mute);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.feed {
-  overflow-y: auto;
-  flex: 1;
-  padding: 0;
-}
-
-.feed .fempty {
-  color: var(--mute);
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 12px;
-  text-align: center;
-  padding: 26px 12px;
-  line-height: 1.7;
-}
-
-.ev {
-  display: flex;
-  gap: 10px;
-  padding: 9px 16px;
-  border-bottom: 1px solid var(--border2);
-  align-items: flex-start;
-  transition: background .1s;
-}
-
-.ev:hover { background: var(--bg); }
-
-.ev .eico {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  border-bottom: 2px solid transparent;
-  flex-shrink: 0;
-}
-
-.ev.goal .eico   { border-bottom-color: var(--gold); }
-.ev.yellow .eico { border-bottom-color: var(--warn); }
-.ev.red .eico    { border-bottom-color: var(--red); }
-.ev.sub .eico    { border-bottom-color: var(--blue); }
-.ev.var .eico    { border-bottom-color: var(--mute); }
-
-.ev .ebody { min-width: 0; flex: 1; }
-.ev .el1 { font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--text); }
-.ev .el2 { font-size: 10px; color: var(--mute); margin-top: 1px; }
-.ev .emin { flex: none; font-size: 10px; font-weight: 700; color: var(--mute); font-variant-numeric: tabular-nums; min-width: 28px; text-align: right; }
 
 @keyframes flashin { from { background: rgba(200,16,46,.07); } to { background: transparent; } }
 
@@ -1610,9 +1431,6 @@ footer.app {
 [data-theme="dark"] .match.scheduled { background: transparent; }
 [data-theme="dark"] .gcard { background: var(--surface); }
 [data-theme="dark"] .gcard h3 { background: var(--bg); }
-[data-theme="dark"] aside.ticker { background: var(--surface); }
-[data-theme="dark"] .tk-score { background: var(--bg2); }
-[data-theme="dark"] .tk-sel select { background: var(--bg); color: var(--text); }
 [data-theme="dark"] .filters input, [data-theme="dark"] .filters select { background: var(--surface); border-color: var(--border); color: var(--text); }
 [data-theme="dark"] .chip { border-color: var(--border); }
 [data-theme="dark"] .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); }
@@ -1647,15 +1465,6 @@ footer.app {
 
 @media (max-width: 960px) {
   .gm { grid-template-columns: 1fr; gap: 12px; }
-  aside.ticker {
-    position: static;
-    max-height: none;
-    order: -1;
-    top: 0;
-    border-top: 3px solid var(--dim);
-    border-bottom: 1px solid var(--border);
-  }
-  .feed { max-height: 220px; }
   .match.live .score:not(.vs) { font-size: 42px; min-width: 90px; }
   .match.live .tname { font-size: 15px; }
   .eh-sub { display: none; }
@@ -1694,11 +1503,6 @@ footer.app {
   .filters input[type=text] { flex: 1 1 120px; font-size: 12px; padding: 6px 10px; }
   .filters select { font-size: 12px; padding: 6px 8px; }
   .chip { padding: 5px 10px; font-size: 9px; }
-
-  /* ── Ticker: kleiner auf Mobile ── */
-  .feed { max-height: 160px; }
-  .tk-head { padding: 8px 12px; }
-  .tk-score { padding: 8px 12px; }
 
   /* ── Match rows ── */
   .flag { display: none; }
@@ -1833,26 +1637,7 @@ footer.app {
       <div id="scheduleList"></div>
       <div id="groupInline"></div>
     </section>
-    <aside class="ticker">
-      <div class="tk-head">
-        <div class="t"><span class="ld" id="tkDot" style="opacity:.25"></span>Live-Ticker</div>
-        <div style="display:flex;gap:5px;align-items:center">
-          <button class="ref-btn" id="refBtn" title="Jetzt aktualisieren">↻</button>
-          <button class="ref-btn" id="tkToggle" title="Ticker ein/aus" style="min-width:64px">▶ An</button>
-        </div>
-      </div>
-      <div class="tk-sel">
-        <select id="tkMatch"></select>
-        <select id="pollSel">
-          <option value="30000">30 s</option>
-          <option value="60000" selected>60 s</option>
-          <option value="120000">2 min</option>
-          <option value="300000">5 min ⚠</option>
-        </select>
-      </div>
-      <div class="tk-score" id="tkScore"></div>
-      <div class="feed" id="tkFeed"></div>
-    </aside>
+
   </div>
 </div>
 
@@ -2200,7 +1985,7 @@ function computeStandings(matches){
    6. STATE
    ============================================================ */
 let MATCHES=[],STANDINGS=null;
-let state={view:"schedule",status:"all",group:"",q:"",tickerId:null,tickerActive:false};
+let state={view:"schedule",status:"all",group:"",q:"",expandedId:null};
 let pollMs=60000,pollTimer=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2294,6 +2079,21 @@ function renderSchedule(){
       return`<div class="daygroup"><div class="dayhead">${weekday}, ${rest}<span class="dh-sub">${cnt} Spiel${cnt!==1?"e":""}</span></div>${byDay[date].map(mCard).join("")}</div>`;
     }).join("");
   }
+  /* Restore expanded match after DOM rebuild (poll cycle) */
+  if(state.expandedId){
+    const card=document.querySelector('[data-mid="'+state.expandedId+'"]');
+    if(card){
+      card.classList.add("expanded");
+      const det=card.querySelector(".match-detail");
+      const m=MATCHES.find(x=>x.id===state.expandedId);
+      if(det&&m){
+        if(m.status!=="scheduled") det.innerHTML=renderDetail(null,m);
+        if(m.apiId) fetchMatchSummary(m.apiId,m.status==="live")
+          .then(d=>{const c=document.querySelector('[data-mid="'+state.expandedId+'"] .match-detail');if(c) c.innerHTML=renderDetail(d,m);})
+          .catch(()=>{const c=document.querySelector('[data-mid="'+state.expandedId+'"] .match-detail');if(c) c.innerHTML=renderDetail(null,m);});
+      }
+    }
+  }
   /* Inline group table when a group is selected */
   const gi=$("#groupInline");
   if(state.group){
@@ -2353,10 +2153,11 @@ function mCard(m){
 /* ============================================================
    9. MATCH DETAIL EXPAND
    ============================================================ */
-async function fetchMatchSummary(apiId){
-  const k="sum_"+apiId,c=cG(k);if(c) return c;
+async function fetchMatchSummary(apiId,isLive){
+  const k="sum_"+apiId;
+  if(!isLive){const c=cG(k);if(c) return c;}
   const d=await fetch(ESPN+"/summary?event="+apiId).then(r=>r.json());
-  cS(k,d,10*60*1000);
+  if(!isLive) cS(k,d,10*60*1000);
   return d;
 }
 
@@ -2584,23 +2385,30 @@ function toggleDetail(id){
   if(!card) return;
   const isOpen=card.classList.contains("expanded");
   document.querySelectorAll(".match.expanded").forEach(c=>c.classList.remove("expanded"));
-  if(isOpen) return;
+  if(isOpen){state.expandedId=null;return;}
+  state.expandedId=id;
   card.classList.add("expanded");
   const det=card.querySelector(".match-detail");
-  if(!det||det.dataset.loaded) return;
+  if(!det) return;
   const m=MATCHES.find(x=>x.id===id);
   if(!m) return;
+  const isLive=m.status==="live";
   /* For live/finished: render immediately from scoreboard data, then enhance */
   if(m.status!=="scheduled") det.innerHTML=renderDetail(null,m);
   if(m.apiId){
     /* Enhance with summary (rosters, saves, offsides, passes, etc.) */
-    fetchMatchSummary(m.apiId)
-      .then(d=>{det.innerHTML=renderDetail(d,m);})
-      .catch(()=>{det.innerHTML=renderDetail(null,m);})
-      .finally(()=>{det.dataset.loaded="1";});
+    fetchMatchSummary(m.apiId,isLive)
+      .then(d=>{
+        /* Write to the current DOM element for this match (may have been replaced by polling) */
+        const cur=document.querySelector('[data-mid="'+id+'"] .match-detail');
+        if(cur) cur.innerHTML=renderDetail(d,m);
+      })
+      .catch(()=>{
+        const cur=document.querySelector('[data-mid="'+id+'"] .match-detail');
+        if(cur) cur.innerHTML=renderDetail(null,m);
+      });
   } else {
     det.innerHTML=renderDetail(null,m);
-    det.dataset.loaded="1";
   }
 }
 
@@ -2732,75 +2540,11 @@ function renderTopScorers(){
 /* ============================================================
    12. LIVE-TICKER
    ============================================================ */
-function fillTickerSelect(){
-  const sel=$("#tkMatch");
-  const sorted=[...MATCHES].sort((a,b)=>{
-    const o=s=>s==="live"?0:s==="finished"?1:2;
-    return o(a.status)-o(b.status)||(a.date+a.time).localeCompare(b.date+b.time);
-  });
-  const cur=state.tickerId;
-  sel.innerHTML=sorted.map(m=>`<option value="${esc(m.id)}">${esc(m.aName)} – ${esc(m.bName)}${m.status==="live"?" 🔴":m.status==="finished"?" ✓":""}</option>`).join("");
-  if(!cur){const lv=MATCHES.find(m=>m.status==="live");state.tickerId=lv?lv.id:MATCHES[0]?.id;}
-  sel.value=state.tickerId;
-}
-
-async function renderTicker(){
-  const feed=$("#tkFeed"),sc=$("#tkScore");
-  if(!state.tickerActive){
-    sc.innerHTML="";
-    feed.innerHTML='<div class="fempty">Ticker aktivieren<br>um Events zu laden.</div>';
-    return;
-  }
-  const m=MATCHES.find(x=>x.id===state.tickerId);
-  if(!m){sc.innerHTML="";feed.innerHTML='<div class="fempty">Kein Spiel gewählt.</div>';return;}
-  const ss=m.score?`${m.score.a} : ${m.score.b}`:"– : –";
-  const mmHtml=m.status==="live"
-    ?`<div class="mm" style="color:var(--red);font-size:.72rem;font-weight:700;margin-top:3px">▶ ${m.minute||0}. Minute</div>`
-    :m.status==="finished"?`<div class="mm" style="color:var(--mute);font-size:.72rem;margin-top:3px">Endstand</div>`
-    :`<div class="mm" style="color:var(--blue);font-size:.72rem;margin-top:3px">Anstoß ${m.time} Uhr</div>`;
-  /* Win probability bar (live matches only, fetched from summary) */
-  let wpHtml="";
-  if(m.status==="live"&&m.apiId){
-    try{
-      const sum=await fetchMatchSummary(m.apiId);
-      const wp=sum?.winProbability;
-      if(wp?.length){
-        const last=wp[wp.length-1];
-        const hp=Math.round((last.homeWinPercentage||0)*100);
-        const ap=Math.round((last.awayWinPercentage||0)*100);
-        wpHtml=`<div class="wp-bar">
-          <div class="wp-bar-track">
-            <div class="wp-bar-home" style="width:${hp}%"></div>
-            <div class="wp-bar-away"></div>
-          </div>
-          <div class="wp-bar-labels"><span>${esc(m.aName)} ${hp}%</span><span>${ap}% ${esc(m.bName)}</span></div>
-        </div>`;
-      }
-    }catch(e){}
-  }
-  sc.innerHTML=`<div class="ss">${m.aFlag} ${esc(m.aName)} <span style="color:var(--mute)">${ss}</span> ${esc(m.bName)} ${m.bFlag}</div>${mmHtml}${wpHtml}`;
-  let evs=m.events||[];
-  if(m.status==="live"||m.status==="finished"){
-    const fresh=await fetchLiveEvents(m.id);
-    if(fresh.length) evs=fresh;
-    if(m.events&&fresh.length) m.events=fresh;
-  }
-  if(!evs.length){feed.innerHTML=`<div class="fempty">${m.status==="scheduled"?"Spiel noch nicht gestartet.":"Keine Ereignisse."}</div>`;return;}
-  const sorted=[...evs].sort((a,b)=>b.min-a.min);
-  feed.innerHTML=sorted.map(e=>{
-    const tnm=esc(e.teamName||(e.team?TEAMS[e.team]?.n:""));
-    const l2=e.type==="sub"?esc(e.player):(EVL[e.type]||"")+(tnm?" · "+tnm:"");
-    const l1=e.type==="sub"?"Wechsel":esc(e.player);
-    return`<div class="ev ${e.type}"><span class="emin">${e.min}'</span><span class="eico">${EVI[e.type]||"•"}</span><span class="ebody"><span class="el1">${l1}</span><span class="el2">${l2}</span></span></div>`;
-  }).join("");
-}
-
 /* ============================================================
    12. LIVE-POLL-LOOP
    ============================================================ */
 async function liveLoop(){
   clearTimeout(pollTimer);
-  const rb=$("#refBtn");rb.classList.add("spin");
   try{
     /* Live-Scores von ESPN holen und in MATCHES mergen */
     const live=await fetchLiveFixtures();
@@ -2826,12 +2570,10 @@ async function liveLoop(){
     }
     if(apiMode!=="error") apiMode="live";
   }catch(e){console.warn("liveLoop:",e);}
-  finally{rb.classList.remove("spin");}
   updateKPIs();updateApiStatus();
   if(state.view==="schedule") renderSchedule();
   if(state.view==="groups") renderGroups();
   if(state.view==="topscorers") renderTopScorers();
-  renderTicker();fillTickerSelect();
   $("#lastRefresh").textContent="↻ "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   pollTimer=setTimeout(liveLoop,pollMs);
 }
@@ -2844,7 +2586,7 @@ async function globalSync(){
     ["fx","fxStale","fxGuard","st","live"].forEach(k=>delete C[k]);
     MATCHES=await fetchMatches();
     updateKPIs();updateApiStatus();
-    renderSchedule();fillTickerSelect();renderTicker();
+    renderSchedule();
     if(state.view==="groups") renderGroups();
     if(state.view==="topscorers") renderTopScorers();
     updateCardKPIs();
@@ -2891,17 +2633,6 @@ function bindUI(){
     document.querySelectorAll("#statusChips .chip").forEach(x=>x.setAttribute("aria-pressed",x===c));
     renderSchedule();
   });
-  $("#tkMatch").addEventListener("change",e=>{state.tickerId=e.target.value;renderTicker();});
-  $("#pollSel").addEventListener("change",e=>{pollMs=parseInt(e.target.value);if(state.tickerActive){clearTimeout(pollTimer);pollTimer=setTimeout(liveLoop,pollMs);}});
-  $("#tkToggle").addEventListener("click",()=>{
-    state.tickerActive=!state.tickerActive;
-    const btn=$("#tkToggle"),dot=$("#tkDot");
-    btn.textContent=state.tickerActive?"■ Aus":"▶ An";
-    btn.style.color=state.tickerActive?"var(--red)":"";
-    dot.style.opacity=state.tickerActive?"1":"0.25";
-    renderTicker();
-  });
-  $("#refBtn").addEventListener("click",()=>{if(state.tickerActive) liveLoop();});
   $("#apiStatus").addEventListener("click",()=>globalSync());
   $("#syncBtn").addEventListener("click",()=>globalSync());
 }
@@ -2913,7 +2644,7 @@ async function init(){
   clearTimeout(pollTimer);
   MATCHES=await fetchMatches();
   updateKPIs();updateApiStatus();
-  renderSchedule();fillTickerSelect();renderTicker();
+  renderSchedule();
   updateCardKPIs();
   pollTimer=setTimeout(liveLoop,pollMs);
 }
