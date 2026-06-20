@@ -2796,17 +2796,13 @@ function renderHistory(){
   const currentYear=new Date().getFullYear();
   $("#histWmTable").innerHTML=`<thead><tr>
     <th>Jahr</th><th>Gastgeber</th><th class="hw-winner">Weltmeister</th>
-    <th class="hw-score" style="text-align:center">Finale</th><th>Finalist</th>
   </tr></thead><tbody>${[...WM_HISTORY].reverse().map(w=>{
     const isCur=w.year===2026;
     const wf=WM_FLAGS[w.winner]||"";
-    const ff=WM_FLAGS[w.finalist]||"";
     return`<tr class="${isCur?"hw-current":""}">
       <td class="hw-year">${w.year}</td>
       <td class="hw-host">${esc(w.host)}</td>
       <td class="hw-winner">${w.winner?`${wf} ${esc(w.winner)}`:`<span class="hw-tbd">noch offen</span>`}</td>
-      <td class="hw-score">${w.score?esc(w.score):"–"}</td>
-      <td class="hw-final">${w.finalist?`${ff} ${esc(w.finalist)}`:"–"}</td>
     </tr>`;
   }).join("")}</tbody>`;
 
