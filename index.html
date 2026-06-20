@@ -1602,9 +1602,106 @@ footer.app {
   .ts-goals { font-size: 1.3rem; }
   .ts-flag { font-size: 1.2rem; }
 
+  /* ── History ── */
+  .hist-grid { grid-template-columns: 1fr; }
+  .hist-records { grid-template-columns: 1fr 1fr; }
+  .hist-wm-table td:nth-child(3),.hist-wm-table td:nth-child(5) { display: none; }
+
   /* sticky nav offset for mobile */
   nav#tabs { top: 46px; }
 }
+
+/* ─── HISTORY TAB ─────────────────────────────────────────── */
+#view-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.hist-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--rule);
+  box-shadow: var(--sh2);
+  margin-bottom: 12px;
+}
+.hist-section-head {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+/* Weltmeister-Tabelle */
+.hist-wm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: 12px;
+}
+.hist-wm-table th {
+  padding: 7px 12px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.hist-wm-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.hist-wm-table tr:last-child td { border-bottom: none; }
+.hist-wm-table tr:hover td { background: var(--bg); }
+.hist-wm-table .hw-year { font-weight: 800; color: var(--text); font-size: 13px; width: 48px; }
+.hist-wm-table .hw-host { color: var(--dim); font-size: 11px; }
+.hist-wm-table .hw-winner { font-weight: 700; color: var(--text); }
+.hist-wm-table .hw-score { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--dim); text-align: center; width: 60px; }
+.hist-wm-table .hw-final { color: var(--dim); font-size: 11px; }
+.hist-wm-table tr.hw-current td { background: rgba(200,16,46,.04); }
+.hist-wm-table .hw-tbd { color: var(--mute); font-style: italic; font-weight: 400; }
+/* Ewige Rangliste */
+.hist-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border2);
+  font-family: var(--sans);
+}
+.hist-rank-row:last-child { border-bottom: none; }
+.hist-rank-pos { width: 18px; font-size: 10px; font-weight: 700; color: var(--mute); flex-shrink: 0; }
+.hist-rank-pos.p1 { color: var(--gold); }
+.hist-rank-pos.p2 { color: var(--dim); }
+.hist-rank-pos.p3 { color: #a0714f; }
+.hist-rank-flag { font-size: 18px; flex-shrink: 0; }
+.hist-rank-name { font-size: 12px; font-weight: 600; color: var(--text); min-width: 90px; flex-shrink: 0; }
+.hist-rank-years { font-size: 10px; color: var(--mute); flex: 1; }
+.hist-rank-bar-wrap { width: 120px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.hist-rank-bar-bg { flex: 1; height: 5px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.hist-rank-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; }
+.hist-rank-count { font-size: 12px; font-weight: 800; color: var(--text); min-width: 12px; text-align: right; }
+/* Rekorde */
+.hist-records {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0;
+}
+.hist-rec-card {
+  padding: 14px 16px;
+  border-right: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+.hist-rec-label { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin-bottom: 4px; }
+.hist-rec-val { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.hist-rec-sub { font-family: var(--sans); font-size: 10px; color: var(--dim); margin-top: 3px; }
 </style>
 </head>
 <body>
@@ -1649,6 +1746,7 @@ footer.app {
     <button data-view="groups">Gruppen</button>
     <button data-view="ko">K.o.-Phase</button>
     <button data-view="topscorers">Torjäger</button>
+    <button data-view="history">History</button>
   </div>
 </nav>
 
@@ -1717,6 +1815,22 @@ footer.app {
     Paarungen stehen nach dem 28. Juni fest.
   </div>
   <div class="bracket" id="bracket"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="view-history" class="hidden">
+  <div class="hist-section">
+    <div class="hist-section-head">Weltmeister 1930 – 2026</div>
+    <table class="hist-wm-table" id="histWmTable"></table>
+  </div>
+  <div class="hist-section">
+    <div class="hist-section-head">Ewige Rangliste · Titel</div>
+    <div id="histRanking"></div>
+  </div>
+  <div class="hist-section">
+    <div class="hist-section-head">Rekorde</div>
+    <div class="hist-records" id="histRecords"></div>
+  </div>
 </div>
 
 <!-- TORJÄGER -->
@@ -2623,7 +2737,109 @@ function renderKO(){
 }
 
 /* ============================================================
-   11. TORJÄGER
+   11. HISTORY
+   ============================================================ */
+const WM_HISTORY=[
+  {year:1930,host:"Uruguay",      winner:"Uruguay",       finalist:"Argentinien",   score:"4:2"},
+  {year:1934,host:"Italien",      winner:"Italien",       finalist:"Tschechoslowakei",score:"2:1"},
+  {year:1938,host:"Frankreich",   winner:"Italien",       finalist:"Ungarn",        score:"4:2"},
+  {year:1950,host:"Brasilien",    winner:"Uruguay",       finalist:"Brasilien",     score:"2:1 *"},
+  {year:1954,host:"Schweiz",      winner:"Deutschland",   finalist:"Ungarn",        score:"3:2"},
+  {year:1958,host:"Schweden",     winner:"Brasilien",     finalist:"Schweden",      score:"5:2"},
+  {year:1962,host:"Chile",        winner:"Brasilien",     finalist:"Tschechoslowakei",score:"3:1"},
+  {year:1966,host:"England",      winner:"England",       finalist:"Deutschland",   score:"4:2"},
+  {year:1970,host:"Mexiko",       winner:"Brasilien",     finalist:"Italien",       score:"4:1"},
+  {year:1974,host:"Deutschland",  winner:"Deutschland",   finalist:"Niederlande",   score:"2:1"},
+  {year:1978,host:"Argentinien",  winner:"Argentinien",   finalist:"Niederlande",   score:"3:1"},
+  {year:1982,host:"Spanien",      winner:"Italien",       finalist:"Deutschland",   score:"3:1"},
+  {year:1986,host:"Mexiko",       winner:"Argentinien",   finalist:"Deutschland",   score:"3:2"},
+  {year:1990,host:"Italien",      winner:"Deutschland",   finalist:"Argentinien",   score:"1:0"},
+  {year:1994,host:"USA",          winner:"Brasilien",     finalist:"Italien",       score:"0:0 (3:2 i.E.)"},
+  {year:1998,host:"Frankreich",   winner:"Frankreich",    finalist:"Brasilien",     score:"3:0"},
+  {year:2002,host:"Korea/Japan",  winner:"Brasilien",     finalist:"Deutschland",   score:"2:0"},
+  {year:2006,host:"Deutschland",  winner:"Italien",       finalist:"Frankreich",    score:"1:1 (5:3 i.E.)"},
+  {year:2010,host:"Südafrika",    winner:"Spanien",       finalist:"Niederlande",   score:"1:0"},
+  {year:2014,host:"Brasilien",    winner:"Deutschland",   finalist:"Argentinien",   score:"1:0"},
+  {year:2018,host:"Russland",     winner:"Frankreich",    finalist:"Kroatien",      score:"4:2"},
+  {year:2022,host:"Katar",        winner:"Argentinien",   finalist:"Frankreich",    score:"3:3 (4:2 i.E.)"},
+  {year:2026,host:"USA/KAN/MEX",  winner:null,            finalist:null,            score:null},
+];
+
+const WM_FLAGS={
+  "Uruguay":"🇺🇾","Argentinien":"🇦🇷","Italien":"🇮🇹","Deutschland":"🇩🇪","Brasilien":"🇧🇷",
+  "England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Frankreich":"🇫🇷","Spanien":"🇪🇸","Niederlande":"🇳🇱","Kroatien":"🇭🇷",
+  "Ungarn":"🇭🇺","Schweden":"🇸🇪","Tschechoslowakei":"🇨🇿","Mexiko":"🇲🇽",
+};
+
+const WM_RANKING=[
+  {nation:"Brasilien",   flag:"🇧🇷", titles:5, years:"1958, 1962, 1970, 1994, 2002"},
+  {nation:"Deutschland", flag:"🇩🇪", titles:4, years:"1954, 1974, 1990, 2014"},
+  {nation:"Italien",     flag:"🇮🇹", titles:4, years:"1934, 1938, 1982, 2006"},
+  {nation:"Argentinien", flag:"🇦🇷", titles:3, years:"1978, 1986, 2022"},
+  {nation:"Frankreich",  flag:"🇫🇷", titles:2, years:"1998, 2018"},
+  {nation:"Uruguay",     flag:"🇺🇾", titles:2, years:"1930, 1950"},
+  {nation:"England",     flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", titles:1, years:"1966"},
+  {nation:"Spanien",     flag:"🇪🇸", titles:1, years:"2010"},
+];
+
+const WM_RECORDS=[
+  {label:"Meiste Titel",           val:"Brasilien",          sub:"5 Weltmeisterschaften (1958–2002)"},
+  {label:"Meiste Tore (Spieler)",  val:"Miroslav Klose",     sub:"16 Tore in 4 Turnieren (2002–2014)"},
+  {label:"Tore in einem Turnier",  val:"Just Fontaine",      sub:"13 Tore · Frankreich 1958"},
+  {label:"Schnellstes Tor",        val:"11 Sekunden",        sub:"Hakan Şükür · Türkei vs. Korea 2002"},
+  {label:"Höchster Sieg",          val:"10:1",               sub:"Ungarn vs. El Salvador · 1982"},
+  {label:"Jüngster Torschütze",    val:"Pelé · 17 Jahre",    sub:"239 Tage · Brasilien vs. Wales 1958"},
+  {label:"Meiste Teilnahmen",      val:"Brasilien",          sub:"Einziges Land bei allen 22 Turnieren"},
+  {label:"Meiste Spiele (Spieler)",val:"Lothar Matthäus",    sub:"25 Spiele · Deutschland 1982–1998"},
+];
+
+function renderHistory(){
+  /* Weltmeister-Tabelle */
+  const currentYear=new Date().getFullYear();
+  $("#histWmTable").innerHTML=`<thead><tr>
+    <th>Jahr</th><th>Gastgeber</th><th class="hw-winner">Weltmeister</th>
+    <th class="hw-score" style="text-align:center">Finale</th><th>Finalist</th>
+  </tr></thead><tbody>${[...WM_HISTORY].reverse().map(w=>{
+    const isCur=w.year===2026;
+    const wf=WM_FLAGS[w.winner]||"";
+    const ff=WM_FLAGS[w.finalist]||"";
+    return`<tr class="${isCur?"hw-current":""}">
+      <td class="hw-year">${w.year}</td>
+      <td class="hw-host">${esc(w.host)}</td>
+      <td class="hw-winner">${w.winner?`${wf} ${esc(w.winner)}`:`<span class="hw-tbd">noch offen</span>`}</td>
+      <td class="hw-score">${w.score?esc(w.score):"–"}</td>
+      <td class="hw-final">${w.finalist?`${ff} ${esc(w.finalist)}`:"–"}</td>
+    </tr>`;
+  }).join("")}</tbody>`;
+
+  /* Ewige Rangliste */
+  const maxT=WM_RANKING[0].titles;
+  $("#histRanking").innerHTML=WM_RANKING.map((r,i)=>{
+    const posCls=i===0?"p1":i===1?"p2":i===2?"p3":"";
+    const pct=Math.round((r.titles/maxT)*100);
+    return`<div class="hist-rank-row">
+      <span class="hist-rank-pos ${posCls}">${i+1}</span>
+      <span class="hist-rank-flag">${r.flag}</span>
+      <span class="hist-rank-name">${esc(r.nation)}</span>
+      <span class="hist-rank-years">${esc(r.years)}</span>
+      <div class="hist-rank-bar-wrap">
+        <div class="hist-rank-bar-bg"><div class="hist-rank-bar-fill" style="width:${pct}%"></div></div>
+        <span class="hist-rank-count">${r.titles}</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  /* Rekorde */
+  $("#histRecords").innerHTML=WM_RECORDS.map(r=>`
+    <div class="hist-rec-card">
+      <div class="hist-rec-label">${esc(r.label)}</div>
+      <div class="hist-rec-val">${esc(r.val)}</div>
+      <div class="hist-rec-sub">${esc(r.sub)}</div>
+    </div>`).join("");
+}
+
+/* ============================================================
+   12. TORJÄGER
    ============================================================ */
 function computeTopScorers(){
   const map={};
@@ -2739,9 +2955,11 @@ function setView(v){
   $("#view-groups").classList.toggle("hidden",v!=="groups");
   $("#view-ko").classList.toggle("hidden",v!=="ko");
   $("#view-topscorers").classList.toggle("hidden",v!=="topscorers");
+  $("#view-history").classList.toggle("hidden",v!=="history");
   if(v==="groups") renderGroups();
   if(v==="ko") renderKO();
   if(v==="topscorers") renderTopScorers();
+  if(v==="history") renderHistory();
 }
 function startClock(){
   const tick=()=>{
