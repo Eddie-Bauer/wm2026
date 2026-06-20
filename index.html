@@ -2124,7 +2124,7 @@ function renderSchedule(){
   if(state.status==="aktuell"){
     const now=new Date();
     const d=(offset)=>{const d=new Date(now);d.setDate(d.getDate()+offset);return d.toLocaleDateString("sv-SE",{timeZone:"Europe/Vienna"});};
-    aktuellFrom=d(-2);aktuellTo=d(2);
+    aktuellFrom=d(-1);aktuellTo=d(1);
   }
   const items=MATCHES.filter(m=>{
     if(state.status==="aktuell"){if(m.date<aktuellFrom||m.date>aktuellTo) return false;}
