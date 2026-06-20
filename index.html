@@ -1386,8 +1386,8 @@ tr.q3 .pos {
 .ko-home { justify-content: flex-end; text-align: right; }
 .ko-away { justify-content: flex-start; }
 .ko-tname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
-.ko-slot-label { display: block; font-size: 9px; color: var(--mute); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ko-slot-proj { display: block; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-slot-label { display: block; font-size: 9px; color: var(--mute); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: inherit; }
+.ko-slot-proj { display: block; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: inherit; }
 .ko-team-tbd { font-family: var(--sans); font-size: 11px; color: var(--mute); font-weight: 500; text-align: center; }
 
 .ko-sc-sched { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--mute); text-align: center; white-space: nowrap; }
@@ -2599,9 +2599,9 @@ function renderKO(){
           return`<div class="ko-card ${m.status}">
             <div class="ko-card-top">${dl}${timeStr}${statusBadge}</div>
             <div class="ko-card-body">
-              <div class="ko-team ko-home">${aT||aSlot.flag} <span style="min-width:0;overflow:hidden">${aNameHtml}</span></div>
+              <div class="ko-team ko-home"><span style="min-width:0;overflow:hidden">${aNameHtml}</span> ${aT||aSlot.flag}</div>
               <div class="${scCls}">${sc}</div>
-              <div class="ko-team ko-away"><span style="min-width:0;overflow:hidden;text-align:right">${bNameHtml}</span> ${bT||bSlot.flag}</div>
+              <div class="ko-team ko-away">${bT||bSlot.flag} <span style="min-width:0;overflow:hidden">${bNameHtml}</span></div>
             </div>
             ${m.venue?`<div class="ko-venue">${esc(m.city||m.venue)}</div>`:""}
           </div>`;
