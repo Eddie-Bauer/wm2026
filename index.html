@@ -1605,8 +1605,6 @@ footer.app {
   /* ── History ── */
   .hist-grid { grid-template-columns: 1fr; }
   .hist-records { grid-template-columns: 1fr 1fr; }
-  .hist-wm-table td:nth-child(3),.hist-wm-table td:nth-child(5) { display: none; }
-
   /* sticky nav offset for mobile */
   nav#tabs { top: 46px; }
 }
@@ -1821,7 +1819,7 @@ footer.app {
 <div id="view-history" class="hidden">
   <div class="hist-section">
     <div class="hist-section-head">Weltmeister 1930 – 2026</div>
-    <table class="hist-wm-table" id="histWmTable"></table>
+    <div style="overflow-x:auto"><table class="hist-wm-table" id="histWmTable"></table></div>
   </div>
   <div class="hist-section">
     <div class="hist-section-head">Ewige Rangliste · Titel</div>
