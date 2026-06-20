@@ -1684,6 +1684,7 @@ footer.app {
     <select id="fgrp"><option value="">Alle Gruppen</option></select>
     <div class="chip-row" id="statusChips">
       <button class="chip" data-st="all" aria-pressed="true">Alle</button>
+      <button class="chip" data-st="aktuell" aria-pressed="false">Aktuell</button>
       <button class="chip" data-st="live" aria-pressed="false">Live</button>
       <button class="chip" data-st="scheduled" aria-pressed="false">Geplant</button>
       <button class="chip" data-st="finished" aria-pressed="false">Beendet</button>
@@ -2119,8 +2120,15 @@ function tImg(logo,flag){
 function renderSchedule(){
   const list=$("#scheduleList");
   const q=state.q.trim().toLowerCase();
+  let aktuellFrom="",aktuellTo="";
+  if(state.status==="aktuell"){
+    const now=new Date();
+    const d=(offset)=>{const d=new Date(now);d.setDate(d.getDate()+offset);return d.toLocaleDateString("sv-SE",{timeZone:"Europe/Vienna"});};
+    aktuellFrom=d(-2);aktuellTo=d(2);
+  }
   const items=MATCHES.filter(m=>{
-    if(state.status!=="all"&&m.status!==state.status) return false;
+    if(state.status==="aktuell"){if(m.date<aktuellFrom||m.date>aktuellTo) return false;}
+    else if(state.status!=="all"&&m.status!==state.status) return false;
     if(state.group&&m.group!==state.group) return false;
     if(q&&!(m.aName+" "+m.bName).toLowerCase().includes(q)) return false;
     return true;
