@@ -1683,8 +1683,8 @@ footer.app {
     <input type="text" id="fsearch" placeholder="Team suchen …">
     <select id="fgrp"><option value="">Alle Gruppen</option></select>
     <div class="chip-row" id="statusChips">
-      <button class="chip" data-st="all" aria-pressed="true">Alle</button>
-      <button class="chip" data-st="aktuell" aria-pressed="false">Aktuell</button>
+      <button class="chip" data-st="all" aria-pressed="false">Alle</button>
+      <button class="chip" data-st="aktuell" aria-pressed="true">Aktuell</button>
       <button class="chip" data-st="live" aria-pressed="false">Live</button>
       <button class="chip" data-st="scheduled" aria-pressed="false">Geplant</button>
       <button class="chip" data-st="finished" aria-pressed="false">Beendet</button>
@@ -2044,7 +2044,7 @@ function computeStandings(matches){
    6. STATE
    ============================================================ */
 let MATCHES=[],STANDINGS=null;
-let state={view:"schedule",status:"all",group:"",q:"",expandedId:null};
+let state={view:"schedule",status:"aktuell",group:"",q:"",expandedId:null};
 let pollMs=60000,pollTimer=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
