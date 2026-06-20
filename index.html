@@ -1386,6 +1386,7 @@ tr.q3 .pos {
 .ko-home { justify-content: flex-end; text-align: right; }
 .ko-away { justify-content: flex-start; }
 .ko-tname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.ko-tname.tentative { color: var(--mute); font-style: italic; font-weight: 500; }
 .ko-team-tbd { font-family: var(--sans); font-size: 11px; color: var(--mute); font-weight: 500; text-align: center; }
 
 .ko-sc-sched { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--mute); text-align: center; white-space: nowrap; }
@@ -2534,6 +2535,34 @@ function renderKOProjected(){
   </div>`;
 }
 
+/* Parses ESPN slot names like "Winner Group A", "Runner-up Group B", "3rd Place Group C"
+   and returns the currently leading team from standings, or null if name is a real team */
+function resolveKOSlot(name){
+  if(!name) return null;
+  const tbl=STANDINGS||computeStandings(MATCHES);
+  const mW=name.match(/winner.*group\s*([A-L])/i)||name.match(/group\s*([A-L]).*winner/i);
+  const mR=name.match(/runner.?up.*group\s*([A-L])/i)||name.match(/group\s*([A-L]).*runner/i)||name.match(/2nd.*group\s*([A-L])/i);
+  const m3=name.match(/3rd.*group\s*([A-L])/i)||name.match(/third.*group\s*([A-L])/i);
+  let group=null,pos=0;
+  if(mW){group=mW[1].toUpperCase();pos=0;}
+  else if(mR){group=mR[1].toUpperCase();pos=1;}
+  else if(m3){group=m3[1].toUpperCase();pos=2;}
+  if(!group) return null;
+  const rows=tbl[group]||[];
+  const r=rows[pos];
+  if(!r) return null;
+  const code=r.team;
+  return{name:TEAMS[code]?.n||code,flag:TEAMS[code]?.f||"🏳️",code};
+}
+
+/* Returns {display, flag, tentative} for a KO slot — resolves tentative slots from standings */
+function koSlotDisplay(name,code){
+  if(code&&TEAMS[code]) return{display:TEAMS[code].n,flag:TEAMS[code].f,tentative:false};
+  const resolved=resolveKOSlot(name);
+  if(resolved) return{display:`[${resolved.name}]`,flag:resolved.flag,tentative:true};
+  return{display:name||"TBD",flag:"🏳️",tentative:!code};
+}
+
 function renderKO(){
   const ROUNDS=[
     {slug:"round-of-32",  label:"Sechzehntelfinale", dates:"28.06.–04.07.", cols:4},
@@ -2552,10 +2581,10 @@ function renderKO(){
       ? ms.map(m=>{
           const d=new Date(m.date+"T12:00:00");
           const dl=d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
-          const aT=m.aLogo?`<img class="ti" src="${esc(m.aLogo)}" alt="" onerror="this.style.display='none'"> `:"";
-          const bT=m.bLogo?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'"> `:"";
-          const aFlag=TEAMS[m.a]?.f||"🏳️",bFlag=TEAMS[m.b]?.f||"🏳️";
-          const aName=esc(m.aName),bName=esc(m.bName);
+          const aSlot=koSlotDisplay(m.aName,m.a);
+          const bSlot=koSlotDisplay(m.bName,m.b);
+          const aT=(!aSlot.tentative&&m.aLogo)?`<img class="ti" src="${esc(m.aLogo)}" alt="" onerror="this.style.display='none'"> `:"";
+          const bT=(!bSlot.tentative&&m.bLogo)?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'"> `:"";
           const sc=m.score?`${m.score.a}:${m.score.b}`:"–:–";
           const scCls=m.status==="live"?"ko-sc-live":m.status==="finished"?"ko-sc-fin":"ko-sc-sched";
           const statusBadge=m.status==="live"?`<span class="ko-badge-live">Live</span>`:m.status==="finished"?`<span class="ko-badge-fin">FT</span>`:"";
@@ -2563,9 +2592,9 @@ function renderKO(){
           return`<div class="ko-card ${m.status}">
             <div class="ko-card-top">${dl}${timeStr}${statusBadge}</div>
             <div class="ko-card-body">
-              <div class="ko-team ko-home">${aT||aFlag} <span class="ko-tname">${aName}</span></div>
+              <div class="ko-team ko-home">${aT||aSlot.flag} <span class="ko-tname${aSlot.tentative?" tentative":""}">${esc(aSlot.display)}</span></div>
               <div class="${scCls}">${sc}</div>
-              <div class="ko-team ko-away"><span class="ko-tname">${bName}</span> ${bT||bFlag}</div>
+              <div class="ko-team ko-away"><span class="ko-tname${bSlot.tentative?" tentative":""}">${esc(bSlot.display)}</span> ${bT||bSlot.flag}</div>
             </div>
             ${m.venue?`<div class="ko-venue">${esc(m.city||m.venue)}</div>`:""}
           </div>`;
