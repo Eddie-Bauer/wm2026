@@ -1370,24 +1370,17 @@ tr.q3 .pos {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 6px;
+  gap: 1px 8px;
   min-width: 0;
 }
-.ko-team {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  min-width: 0;
-}
-.ko-home { justify-content: flex-end; text-align: right; }
-.ko-away { justify-content: flex-start; }
-.ko-tname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
-.ko-slot-label { display: block; font-size: 9px; color: var(--mute); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: inherit; }
-.ko-slot-proj { display: block; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: inherit; }
+/* Row 1: slot labels */
+.ko-lbl-l { font-family: var(--sans); font-size: 9px; font-weight: 600; color: var(--mute); letter-spacing: 0.04em; text-transform: uppercase; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-lbl-r { font-family: var(--sans); font-size: 9px; font-weight: 600; color: var(--mute); letter-spacing: 0.04em; text-transform: uppercase; text-align: left;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-lbl-sep { font-family: var(--sans); font-size: 9px; font-weight: 600; color: var(--mute); text-align: center; white-space: nowrap; }
+/* Row 2: teams */
+.ko-tm-l { display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text); }
+.ko-tm-r { display: flex; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text); }
+.ko-tm-l span, .ko-tm-r span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .ko-team-tbd { font-family: var(--sans); font-size: 11px; color: var(--mute); font-weight: 500; text-align: center; }
 
 .ko-sc-sched { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--mute); text-align: center; white-space: nowrap; }
@@ -2584,24 +2577,22 @@ function renderKO(){
           const dl=d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
           const aSlot=koSlotDisplay(m.aName,m.a);
           const bSlot=koSlotDisplay(m.bName,m.b);
-          const aT=(!aSlot.tentative&&m.aLogo)?`<img class="ti" src="${esc(m.aLogo)}" alt="" onerror="this.style.display='none'"> `:"";
-          const bT=(!bSlot.tentative&&m.bLogo)?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'"> `:"";
+          const aImg=(!aSlot.tentative&&m.aLogo)?`<img class="ti" src="${esc(m.aLogo)}" alt="" onerror="this.style.display='none'">`:"";
+          const bImg=(!bSlot.tentative&&m.bLogo)?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'">`:"";
           const sc=m.score?`${m.score.a}:${m.score.b}`:"–:–";
           const scCls=m.status==="live"?"ko-sc-live":m.status==="finished"?"ko-sc-fin":"ko-sc-sched";
           const statusBadge=m.status==="live"?`<span class="ko-badge-live">Live</span>`:m.status==="finished"?`<span class="ko-badge-fin">FT</span>`:"";
           const timeStr=m.status==="scheduled"?`<span class="ko-time">${m.time} Uhr</span>`:"";
-          const aNameHtml=aSlot.label
-            ?`<span class="ko-slot-label">${esc(aSlot.label)}</span><span class="ko-slot-proj">${esc(aSlot.proj)}</span>`
-            :`<span class="ko-tname">${esc(aSlot.proj)}</span>`;
-          const bNameHtml=bSlot.label
-            ?`<span class="ko-slot-label">${esc(bSlot.label)}</span><span class="ko-slot-proj">${esc(bSlot.proj)}</span>`
-            :`<span class="ko-tname">${esc(bSlot.proj)}</span>`;
+          const labelRow=(aSlot.label||bSlot.label)
+            ?`<div class="ko-lbl-l">${esc(aSlot.label||"")}</div><div class="ko-lbl-sep">–:–</div><div class="ko-lbl-r">${esc(bSlot.label||"")}</div>`
+            :"";
           return`<div class="ko-card ${m.status}">
             <div class="ko-card-top">${dl}${timeStr}${statusBadge}</div>
             <div class="ko-card-body">
-              <div class="ko-team ko-home"><span style="min-width:0;overflow:hidden">${aNameHtml}</span> ${aT||aSlot.flag}</div>
+              ${labelRow}
+              <div class="ko-tm-l"><span>${esc(aSlot.proj)}</span> ${aImg||aSlot.flag}</div>
               <div class="${scCls}">${sc}</div>
-              <div class="ko-team ko-away">${bT||bSlot.flag} <span style="min-width:0;overflow:hidden">${bNameHtml}</span></div>
+              <div class="ko-tm-r">${bImg||bSlot.flag} <span>${esc(bSlot.proj)}</span></div>
             </div>
             ${m.venue?`<div class="ko-venue">${esc(m.city||m.venue)}</div>`:""}
           </div>`;
