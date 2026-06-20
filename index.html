@@ -426,10 +426,7 @@ nav#tabs button.active { color: var(--text); border-bottom-color: var(--red); }
 /* ─── MAIN GRID ──────────────────────────────────────────── */
 
 .gm {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 16px;
-  align-items: start;
+  display: block;
 }
 
 /* Ebene 2: Hauptcontainer */
@@ -1222,6 +1219,72 @@ tr.q3 .pos {
   line-height: 1.7;
 }
 .ko-note b { color: var(--text); font-family: var(--sans); font-weight: 700; }
+
+/* KO Projektion */
+.ko-proj {
+  border-bottom: 2px solid var(--rule);
+  padding-bottom: 0;
+}
+.ko-proj-head {
+  padding: 12px 16px 10px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ko-proj-label {
+  font-weight: 400;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.ko-proj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0;
+}
+.ko-proj-group {
+  padding: 10px 14px 10px;
+  border-right: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+.ko-proj-gtitle {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin-bottom: 6px;
+}
+.ko-proj-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  font-family: var(--sans);
+  font-size: 11px;
+}
+.ko-proj-row.q3 { opacity: .45; }
+.ko-proj-pos {
+  width: 13px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--mute);
+  flex-shrink: 0;
+}
+.ko-proj-row.q1 .ko-proj-pos { color: var(--gold); }
+.ko-proj-row.q2 .ko-proj-pos { color: var(--blue); }
+.ko-proj-flag { font-size: 13px; flex-shrink: 0; }
+.ko-proj-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-proj-row.q3 .ko-proj-name { font-weight: 400; }
+.ko-proj-pts { font-size: 9px; color: var(--mute); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
 /* KO bracket — round sections */
 .bracket { display: flex; flex-direction: column; gap: 0; }
@@ -2441,6 +2504,36 @@ async function renderGroups(){
 /* ============================================================
    10. K.O.
    ============================================================ */
+function renderKOProjected(){
+  const tbl=STANDINGS||computeStandings(MATCHES);
+  const groups=Object.keys(tbl).sort();
+  if(!groups.length) return"";
+  const groupMatches=MATCHES.filter(m=>m.group&&m.group!=="KO");
+  const played=groupMatches.filter(m=>m.status!=="scheduled").length;
+  const total=groupMatches.length;
+  const allDone=total>0&&played===total;
+  if(allDone) return""; /* Gruppenphase fertig — Projektion nicht mehr nötig */
+  return`<div class="ko-proj">
+    <div class="ko-proj-head">Aktuelle Qualifikanten <span class="ko-proj-label">Projektion · ${played}/${total} Gruppenspiele</span></div>
+    <div class="ko-proj-grid">${groups.map(g=>{
+      const rows=tbl[g]||[];
+      return`<div class="ko-proj-group">
+        <div class="ko-proj-gtitle">Gruppe ${esc(g)}</div>
+        ${rows.slice(0,3).map((r,i)=>{
+          const code=r.team,name=TEAMS[code]?.n||code,flag=TEAMS[code]?.f||"🏳️";
+          const cls=i===0?"q1":i===1?"q2":"q3";
+          return`<div class="ko-proj-row ${cls}">
+            <span class="ko-proj-pos">${i+1}</span>
+            <span class="ko-proj-flag">${flag}</span>
+            <span class="ko-proj-name">${esc(name)}</span>
+            <span class="ko-proj-pts">${r.p} Pkt</span>
+          </div>`;
+        }).join("")}
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+
 function renderKO(){
   const ROUNDS=[
     {slug:"round-of-32",  label:"Sechzehntelfinale", dates:"28.06.–04.07.", cols:4},
@@ -2452,7 +2545,7 @@ function renderKO(){
   const KO_SLUGS=new Set(ROUNDS.map(r=>r.slug));
   const koMatches=MATCHES.filter(m=>KO_SLUGS.has(m.slug));
 
-  $("#bracket").innerHTML=ROUNDS.map(r=>{
+  $("#bracket").innerHTML=renderKOProjected()+ROUNDS.map(r=>{
     const ms=koMatches.filter(m=>m.slug===r.slug)
       .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
     const cards=ms.length
@@ -2573,6 +2666,7 @@ async function liveLoop(){
   updateKPIs();updateApiStatus();
   if(state.view==="schedule") renderSchedule();
   if(state.view==="groups") renderGroups();
+  if(state.view==="ko") renderKO();
   if(state.view==="topscorers") renderTopScorers();
   $("#lastRefresh").textContent="↻ "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   pollTimer=setTimeout(liveLoop,pollMs);
