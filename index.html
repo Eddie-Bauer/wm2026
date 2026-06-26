@@ -2161,7 +2161,7 @@ let state={view:"schedule",status:"aktuell",group:"",q:"",expandedId:null};
 let pollMs=60000,pollTimer=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function applyTwemoji(el){if(el&&window.twemoji)twemoji.parse(el,{folder:'svg',ext:'.svg'});}
+function applyTwemoji(el){if(el&&window.twemoji)twemoji.parse(el,{base:'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/',folder:'svg',ext:'.svg'});}
 
 /* ============================================================
    7. KPIs & API-STATUS
@@ -2227,7 +2227,7 @@ const EVL={goal:"Tor",yellow:"Gelb",red:"Rot",sub:"Wechsel",var:"VAR"};
 
 function tImg(logo,flag){
   const safe=logo&&/^https?:\/\//.test(logo)?logo:null;
-  if(safe) return`<img class="ti" src="${esc(safe)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';if(window.twemoji)twemoji.parse(this.nextElementSibling,{folder:'svg',ext:'.svg'})"><span class="flag" style="display:none">${flag}</span>`;
+  if(safe) return`<img class="ti" src="${esc(safe)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';if(window.twemoji)twemoji.parse(this.nextElementSibling,{base:'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/',folder:'svg',ext:'.svg'})"><span class="flag" style="display:none">${flag}</span>`;
   return`<span class="flag">${flag}</span>`;
 }
 
@@ -2285,10 +2285,9 @@ function renderSchedule(){
       <table class="gi-table"><thead><tr><th>#</th><th class="tn">Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>TD</th><th>Pkt</th></tr></thead>
       <tbody>${rows.map((r,i)=>{
         const code=r.team,name=TEAMS[code]?.n||code,flag=TEAMS[code]?.f||"🏳️";
-        const safeLogo=r.logo&&/^https?:\/\//.test(r.logo)?r.logo:null;
         const cls=i<2?"q"+(i+1):i===2?"q3":"";
         return`<tr class="${cls}"><td><span class="pos">${i+1}</span></td>
-          <td class="tn">${safeLogo?`<img class="ti" src="${esc(safeLogo)}" alt="" style="width:20px;height:20px" onerror="this.style.display='none'">`:`<span>${flag}</span>`}${esc(name)}</td>
+          <td class="tn">${tImg(r.logo,flag)}${esc(name)}</td>
           <td>${r.sp}</td><td>${r.s}</td><td>${r.u}</td><td>${r.n}</td>
           <td>${r.t}:${r.gt}</td><td>${r.td>0?"+":""}${r.td}</td><td class="pts">${r.p}</td></tr>`;
       }).join("")}</tbody></table>
@@ -2609,10 +2608,9 @@ async function renderGroups(){
       <table><thead><tr><th>#</th><th class="tn">Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>TD</th><th>Pkt</th></tr></thead>
       <tbody>${rows.map((r,i)=>{
         const code=r.team,name=TEAMS[code]?.n||r.team,flag=TEAMS[code]?.f||"🏳️";
-        const safeLogo=r.logo&&/^https?:\/\//.test(r.logo)?r.logo:null;
         const cls=i<2?"q"+(i+1):i===2?"q3":"";
         return`<tr class="${cls}"><td><span class="pos">${i+1}</span></td>
-          <td class="tn">${safeLogo?`<img class="ti" src="${esc(safeLogo)}" alt="" style="width:20px;height:20px" onerror="this.style.display='none'">`:`<span>${flag}</span>`}${esc(name)}</td>
+          <td class="tn">${tImg(r.logo,flag)}${esc(name)}</td>
           <td>${r.sp}</td><td>${r.s}</td><td>${r.u}</td><td>${r.n}</td>
           <td>${r.t}:${r.gt}</td><td>${r.td>0?"+":""}${r.td}</td><td class="pts">${r.p}</td></tr>`;
       }).join("")}</tbody></table></div>`;
