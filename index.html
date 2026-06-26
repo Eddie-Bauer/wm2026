@@ -1867,7 +1867,7 @@ const GROUPS=[...new Set(Object.values(TEAMS).map(t=>t.g))].sort();
 
 /* API-Football englisch → interner Code */
 const EN2={
-  "Mexico":"MEX","South Africa":"RSA","Korea Republic":"KOR","Czech Republic":"CZE","Czechia":"CZE",
+  "Mexico":"MEX","South Africa":"RSA","Korea Republic":"KOR","South Korea":"KOR","Czech Republic":"CZE","Czechia":"CZE",
   "Canada":"CAN","Qatar":"QAT","Switzerland":"SUI","Bosnia-Herzegovina":"BIH","Bosnia":"BIH",
   "Brazil":"BRA","Haiti":"HAI","Morocco":"MAR","Scotland":"SCO",
   "Australia":"AUS","Paraguay":"PAR","Turkey":"TUR","Turkiye":"TUR","United States":"USA","USA":"USA",
@@ -2066,7 +2066,9 @@ async function fetchStandings(){
       const entries=grp.standings?.entries||[];
       tbl[letter]=entries.map(e=>{
         const dn=e.team?.displayName||e.team?.name||"";
-        const code=EN2[dn]||e.team?.abbreviation||null;
+        const abbr=e.team?.abbreviation||"";
+        const ABBR2={"SKO":"KOR","RSA":"RSA","KSA":"KSA","CUW":"CUW","CPV":"CPV","COD":"COD","CIV":"CIV"};
+        const code=EN2[dn]||ABBR2[abbr]||(TEAMS[abbr]?abbr:null)||null;
         const stats={};(e.stats||[]).forEach(s=>{stats[s.name]=s.value;stats[s.abbreviation]=s.value;});
         return{team:code||dn,logo:e.team?.logos?.[0]?.href||null,
           sp:stats.gamesPlayed??stats.GP??0,
