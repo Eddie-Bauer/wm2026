@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <style>
 /* ══════════════════════════════════════════════════════════════
    FIFA WM 2026 — EDITORIAL MATCH CENTER
@@ -2160,6 +2161,7 @@ let state={view:"schedule",status:"aktuell",group:"",q:"",expandedId:null};
 let pollMs=60000,pollTimer=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function applyTwemoji(el){if(el&&window.twemoji)twemoji.parse(el,{folder:'svg',ext:'.svg'});}
 
 /* ============================================================
    7. KPIs & API-STATUS
@@ -2225,7 +2227,7 @@ const EVL={goal:"Tor",yellow:"Gelb",red:"Rot",sub:"Wechsel",var:"VAR"};
 
 function tImg(logo,flag){
   const safe=logo&&/^https?:\/\//.test(logo)?logo:null;
-  if(safe) return`<img class="ti" src="${esc(safe)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="flag" style="display:none">${flag}</span>`;
+  if(safe) return`<img class="ti" src="${esc(safe)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';if(window.twemoji)twemoji.parse(this.nextElementSibling,{folder:'svg',ext:'.svg'})"><span class="flag" style="display:none">${flag}</span>`;
   return`<span class="flag">${flag}</span>`;
 }
 
@@ -2292,6 +2294,7 @@ function renderSchedule(){
       }).join("")}</tbody></table>
       <div class="gi-legend"><span><span class="lg q"></span>Platz 1–2: Qualifiziert</span><span><span class="lg t"></span>Platz 3: ggf. als bester Dritter</span></div>
     </div>`;
+    applyTwemoji(gi);
   } else {
     gi.innerHTML="";
   }
@@ -2614,6 +2617,7 @@ async function renderGroups(){
           <td>${r.t}:${r.gt}</td><td>${r.td>0?"+":""}${r.td}</td><td class="pts">${r.p}</td></tr>`;
       }).join("")}</tbody></table></div>`;
   }).join("");
+  applyTwemoji(grid);
 }
 
 /* ============================================================
@@ -2732,6 +2736,7 @@ function renderKO(){
       <div class="ko-cards" style="--ko-cols:${r.cols}">${cards}</div>
     </div>`;
   }).join("");
+  applyTwemoji($("#bracket"));
 }
 
 /* ============================================================
@@ -2830,6 +2835,7 @@ function renderHistory(){
       <div class="hist-rec-val">${esc(r.val)}</div>
       <div class="hist-rec-sub">${esc(r.sub)}</div>
     </div>`).join("");
+  applyTwemoji($("#view-history"));
 }
 
 /* ============================================================
@@ -2873,6 +2879,7 @@ function renderTopScorers(){
       <span class="ts-goals">${s.goals}</span>
     </div>`;
   }).join("");
+  applyTwemoji(wrap);
 }
 
 /* ============================================================
