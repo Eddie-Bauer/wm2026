@@ -1385,6 +1385,7 @@ tr.q3 .pos {
 .ko-tm-l { display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text); }
 .ko-tm-r { display: flex; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text); }
 .ko-tm-l span, .ko-tm-r span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ko-winner { color: var(--gold, #c9a84c); font-weight: 800; }
 .ko-team-tbd { font-family: var(--sans); font-size: 11px; color: var(--mute); font-weight: 500; text-align: center; }
 
 .ko-sc-sched { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--mute); text-align: center; white-space: nowrap; }
@@ -1971,8 +1972,12 @@ function mapESPN(e){
   const dateStr=d.toLocaleDateString("sv-SE",{timeZone:"Europe/Vienna"});
   const timeStr=d.toLocaleTimeString("de-DE",{timeZone:"Europe/Vienna",hour:"2-digit",minute:"2-digit"});
   const state=comp.status?.type?.state||"pre";
+  const statusName=comp.status?.type?.name||"";
+  const isShootout=statusName==="STATUS_SHOOTOUT"||statusName==="STATUS_FINAL_PEN"||statusName==="STATUS_FINAL_AET"||statusName==="STATUS_PENALTIES";
   const status=state==="post"?"finished":state==="in"?"live":"scheduled";
-  const minute=status==="live"?(parseInt(comp.status?.displayClock)||null):null;
+  const minute=status==="live"&&!isShootout?(parseInt(comp.status?.displayClock)||null):null;
+  const aWinner=!!home.winner;
+  const bWinner=!!away.winner;
   const sA=status!=="scheduled"?(parseInt(home.score)||0):null;
   const sB=status!=="scheduled"?(parseInt(away.score)||0):null;
   const round=comp.notes?.[0]?.headline||"";
@@ -2011,7 +2016,8 @@ function mapESPN(e){
     date:dateStr,time:timeStr,
     venue:comp.venue?.fullName||e.venue?.fullName||"",
     city:comp.venue?.address?.city||e.venue?.address?.city||"",
-    status,minute,score:status!=="scheduled"?{a:sA,b:sB}:null,
+    status,minute,shootout:isShootout,winner:aWinner?"a":bWinner?"b":null,
+    score:status!=="scheduled"?{a:sA,b:sB}:null,
     events,round,
     slug:e.season?.slug||"group-stage",
     attendance:comp.attendance||0,
@@ -2306,8 +2312,8 @@ function renderSchedule(){
 
 function mCard(m){
   const badge=m.status==="live"
-    ?`<span class="badge live">Live${m.minute?" · "+m.minute+"'":""}</span>`
-    :m.status==="finished"?`<span class="badge fin">Beendet · ${m.time} Uhr</span>`
+    ?`<span class="badge live">${m.shootout?"i.E.":m.minute?m.minute+"'":"Live"}</span>`
+    :m.status==="finished"?`<span class="badge fin">${m.shootout?"n.E. · ":""}Beendet · ${m.time} Uhr</span>`
     :`<span class="badge sched">${m.time} Uhr</span>`;
   const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">–&nbsp;:&nbsp;–</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
@@ -2708,18 +2714,20 @@ function renderKO(){
           const bImg=(!bSlot.tentative&&m.bLogo)?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'">`:"";
           const sc=m.score?`${m.score.a}:${m.score.b}`:"–:–";
           const scCls=m.status==="live"?"ko-sc-live":m.status==="finished"?"ko-sc-fin":"ko-sc-sched";
-          const statusBadge=m.status==="live"?`<span class="ko-badge-live">Live</span>`:m.status==="finished"?`<span class="ko-badge-fin">FT</span>`:"";
+          const statusBadge=m.status==="live"?`<span class="ko-badge-live">${m.shootout?"i.E.":"Live"}</span>`:m.status==="finished"?`<span class="ko-badge-fin">${m.shootout?"n.E.":"FT"}</span>`:"";
           const timeStr=m.status==="scheduled"?`<span class="ko-time">${m.time} Uhr</span>`:"";
           const labelRow=(aSlot.label||bSlot.label)
             ?`<div class="ko-lbl-l">${esc(aSlot.label||"")}</div><div class="ko-lbl-sep">–:–</div><div class="ko-lbl-r">${esc(bSlot.label||"")}</div>`
             :"";
+          const aWin=m.status==="finished"&&m.winner==="a";
+          const bWin=m.status==="finished"&&m.winner==="b";
           return`<div class="ko-card ${m.status}">
             <div class="ko-card-top">${dl}${timeStr}${statusBadge}</div>
             <div class="ko-card-body">
               ${labelRow}
-              <div class="ko-tm-l"><span>${esc(aSlot.proj)}</span> ${aImg||aSlot.flag}</div>
+              <div class="ko-tm-l${aWin?" ko-winner":""}"><span>${esc(aSlot.proj)}</span> ${aImg||aSlot.flag}</div>
               <div class="${scCls}">${sc}</div>
-              <div class="ko-tm-r">${bImg||bSlot.flag} <span>${esc(bSlot.proj)}</span></div>
+              <div class="ko-tm-r${bWin?" ko-winner":""}">  ${bImg||bSlot.flag} <span>${esc(bSlot.proj)}</span></div>
             </div>
             ${m.venue?`<div class="ko-venue">${esc(m.city||m.venue)}</div>`:""}
           </div>`;
