@@ -2315,7 +2315,7 @@ function mCard(m){
     ?`<span class="badge live">${m.shootout?"i.E.":m.minute?m.minute+"'":"Live"}</span>`
     :m.status==="finished"?`<span class="badge fin">${m.shootout?"n.E. · ":""}Beendet · ${m.time} Uhr</span>`
     :`<span class="badge sched">${m.time} Uhr</span>`;
-  const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}</div>`:`<div class="score vs">–&nbsp;:&nbsp;–</div>`;
+  const sc=m.score?`<div class="score">${m.score.a}<span style="opacity:.35"> : </span>${m.score.b}${m.penScore?`<div style="font-size:9px;font-weight:600;color:var(--mute);text-align:center;margin-top:1px">${m.penScore.a}:${m.penScore.b} i.E.</div>`:""}</div>`:`<div class="score vs">–&nbsp;:&nbsp;–</div>`;
   const place=[m.venue,m.city].filter(Boolean).map(esc).join(" · ");
   const dateLabel=new Date(m.date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
   const venueHtml=place?`<span style="display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${place}</span>`:"";
@@ -2350,6 +2350,24 @@ async function fetchMatchSummary(apiId,isLive){
   const d=await fetch(ESPN+"/summary?event="+apiId).then(r=>r.json());
   if(!isLive) cS(k,d,10*60*1000);
   return d;
+}
+
+async function fetchPenScores(){
+  const need=MATCHES.filter(m=>m.shootout&&m.status==="finished"&&!m.penScore&&m.apiId);
+  if(!need.length) return;
+  await Promise.all(need.map(async m=>{
+    try{
+      const d=await fetchMatchSummary(m.apiId,false);
+      if(!d?.shootout?.length) return;
+      const comps=d.header?.competitions?.[0]?.competitors||[];
+      const homeName=comps.find(c=>c.homeAway==="home")?.team?.displayName;
+      const awayName=comps.find(c=>c.homeAway==="away")?.team?.displayName;
+      const sA=d.shootout.find(s=>s.team===homeName)?.shots?.filter(s=>s.didScore).length??0;
+      const sB=d.shootout.find(s=>s.team===awayName)?.shots?.filter(s=>s.didScore).length??0;
+      const idx=MATCHES.findIndex(x=>x.id===m.id);
+      if(idx>=0) MATCHES[idx]={...MATCHES[idx],penScore:{a:sA,b:sB}};
+    }catch(e){}
+  }));
 }
 
 const BALL_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10" fill="rgba(154,108,0,.12)" stroke="var(--green)" stroke-width="1.5"/><path d="M12 6l1.8 3.5L17.5 10l-2.8 2.7.7 3.8L12 14.8l-3.4 1.7.7-3.8L6.5 10l3.7-.5z" fill="var(--green)" opacity=".7"/></svg>`;
@@ -2712,7 +2730,7 @@ function renderKO(){
           const bSlot=koSlotDisplay(m.bName,m.b);
           const aImg=(!aSlot.tentative&&m.aLogo)?`<img class="ti" src="${esc(m.aLogo)}" alt="" onerror="this.style.display='none'">`:"";
           const bImg=(!bSlot.tentative&&m.bLogo)?`<img class="ti" src="${esc(m.bLogo)}" alt="" onerror="this.style.display='none'">`:"";
-          const sc=m.score?`${m.score.a}:${m.score.b}`:"–:–";
+          const sc=m.score?`${m.score.a}:${m.score.b}${m.penScore?`<br><span style="font-size:9px;font-weight:600;color:var(--mute)">${m.penScore.a}:${m.penScore.b} i.E.</span>`:""}` :"–:–";
           const scCls=m.status==="live"?"ko-sc-live":m.status==="finished"?"ko-sc-fin":"ko-sc-sched";
           const statusBadge=m.status==="live"?`<span class="ko-badge-live">${m.shootout?"i.E.":"Live"}</span>`:m.status==="finished"?`<span class="ko-badge-fin">${m.shootout?"n.E.":"FT"}</span>`:"";
           const timeStr=m.status==="scheduled"?`<span class="ko-time">${m.time} Uhr</span>`:"";
@@ -2926,6 +2944,7 @@ async function liveLoop(){
     }
     if(apiMode!=="error") apiMode="live";
   }catch(e){console.warn("liveLoop:",e);}
+  await fetchPenScores();
   updateKPIs();updateApiStatus();
   if(state.view==="schedule") renderSchedule();
   if(state.view==="groups") renderGroups();
@@ -3002,6 +3021,7 @@ function bindUI(){
 async function init(){
   clearTimeout(pollTimer);
   MATCHES=await fetchMatches();
+  await fetchPenScores();
   updateKPIs();updateApiStatus();
   renderSchedule();
   updateCardKPIs();
