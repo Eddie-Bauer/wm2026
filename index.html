@@ -1209,6 +1209,87 @@ tr.q3 .pos {
 }
 .gi-legend span { display: flex; align-items: center; gap: 5px; }
 
+/* ─── VISUAL BRACKET ─────────────────────────────────────── */
+.bv-toggle {
+  display: flex; gap: 4px; padding: 10px 16px;
+  border-bottom: 1px solid var(--border); background: var(--bg2);
+}
+.bv-toggle-btn {
+  font-family: var(--sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 5px 14px; background: transparent;
+  border: 1px solid var(--border); color: var(--mute);
+  cursor: pointer; border-radius: 0; transition: all .12s;
+}
+.bv-toggle-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.bv-container { overflow-x: auto; padding: 20px 16px; background: var(--bg2); -webkit-overflow-scrolling: touch; }
+.bv-bracket { display: flex; align-items: flex-start; gap: 0; min-width: max-content; }
+.bv-half { display: flex; align-items: flex-start; gap: 0; }
+.bv-col-wrap { display: flex; flex-direction: column; }
+.bv-col-hd {
+  font-family: var(--sans); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase; color: var(--mute);
+  text-align: center; padding: 5px 4px; white-space: nowrap;
+  border-bottom: 1px solid var(--border2); background: var(--bg2);
+}
+.bv-col {
+  display: flex; flex-direction: column; justify-content: space-around;
+  width: 154px; height: 640px; position: relative; overflow: visible;
+}
+.bv-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 2px solid var(--rule); padding: 5px 8px 4px;
+  display: flex; flex-direction: column; gap: 1px;
+  cursor: pointer; transition: background .1s;
+  position: relative; flex: none;
+}
+.bv-box:hover { background: var(--bg); }
+.bv-box.bv-live { border-left-color: var(--red); }
+.bv-box.bv-tbd {
+  border: 1px dashed var(--border2); border-left: 2px dashed var(--border);
+  opacity: .35; align-items: center; justify-content: center; min-height: 54px;
+  font-size: 10px; color: var(--mute);
+}
+.bv-box-hd {
+  font-size: 8px; font-weight: 600; color: var(--mute);
+  letter-spacing: 0.03em; margin-bottom: 1px;
+  display: flex; align-items: center; gap: 4px; min-height: 11px;
+}
+.bv-live-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--red);
+  animation: pulse 1.1s infinite; flex: none;
+}
+.bv-row {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  color: var(--dim); min-width: 0; line-height: 1.35;
+}
+.bv-row .bv-flag { font-size: 11px; flex: none; }
+.bv-row .bv-tn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bv-row .bv-sc { font-weight: 800; font-size: 12px; color: var(--text); min-width: 12px; text-align: right; font-variant-numeric: tabular-nums; flex: none; }
+.bv-row.bv-w .bv-tn, .bv-row.bv-w .bv-sc { color: var(--gold); font-weight: 800; }
+.bv-conn-wrap { display: flex; flex-direction: column; }
+.bv-conn-hd { width: 28px; padding: 5px 0; border-bottom: 1px solid var(--border2); background: var(--bg2); }
+.bv-conn { width: 28px; height: 640px; position: relative; flex: none; }
+.bv-center-wrap { display: flex; flex-direction: column; }
+.bv-center-hd {
+  font-family: var(--sans); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase; color: var(--text);
+  text-align: center; padding: 5px 8px;
+  background: var(--bg2); border-bottom: 1px solid var(--border2);
+}
+.bv-center {
+  width: 154px; height: 640px; display: flex; flex-direction: column;
+  align-items: stretch; justify-content: center; gap: 12px; padding: 24px 0;
+}
+.bv-center-lbl {
+  font-family: var(--sans); font-size: 9px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--mute); text-align: center; padding: 3px 0;
+}
+[data-theme="dark"] .bv-box { background: var(--surface); }
+[data-theme="dark"] .bv-box:hover { background: var(--bg2); }
+
 /* ─── K.O. ──────────────────────────────────────────────── */
 
 .ko-note {
@@ -1817,7 +1898,12 @@ footer.app {
     Qualifiziert: <b>Top 2 jeder Gruppe</b> + <b>8 beste Gruppendritte</b>.
     Paarungen stehen nach dem 28. Juni fest.
   </div>
+  <div class="bv-toggle">
+    <button class="bv-toggle-btn active" data-bv="list">Liste</button>
+    <button class="bv-toggle-btn" data-bv="bracket">Spielplan</button>
+  </div>
   <div class="bracket" id="bracket"></div>
+  <div id="bracket-visual" class="bv-container hidden"></div>
 </div>
 
 <!-- HISTORY -->
@@ -2769,6 +2855,153 @@ function renderKO(){
 }
 
 /* ============================================================
+   10b. KO VISUAL BRACKET
+   ============================================================ */
+function renderKOBracket(){
+  const el=$("#bracket-visual");
+  if(!el) return;
+
+  const SLUG_MAP={
+    "round-of-32":"r32","round-of-16":"r16",
+    "quarterfinals":"qf","semifinals":"sf",
+    "final":"final","thirdplace":"3rd","3rd-place":"3rd"
+  };
+  const koMs=MATCHES.filter(m=>SLUG_MAP[m.slug]);
+  const byRound={r32:[],r16:[],qf:[],sf:[],final:[],third:[]};
+  koMs.forEach(m=>{
+    const k=SLUG_MAP[m.slug];
+    if(k==="3rd") byRound.third.push(m);
+    else if(byRound[k]) byRound[k].push(m);
+  });
+  const sortMs=arr=>arr.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  Object.values(byRound).forEach(sortMs);
+
+  const SLOT_H=80, N=8, BV_H=SLOT_H*N; // 640px total
+
+  function boxHtml(m){
+    if(!m) return`<div class="bv-box bv-tbd">TBD</div>`;
+    const a=koSlotDisplay(m.aName,m.a),b=koSlotDisplay(m.bName,m.b);
+    const aW=m.status==="finished"&&m.winner==="a";
+    const bW=m.status==="finished"&&m.winner==="b";
+    const sc=m.score;
+    const hd=m.status==="live"
+      ?`<span class="bv-live-dot"></span>`
+      :m.status==="finished"
+        ?`${m.shootout?"n.E.":"FT"}`
+        :(m.date?`${m.date.slice(8)}.${m.date.slice(5,7)} ${m.time}`:"");
+    return`<div class="bv-box${m.status==="live"?" bv-live":""}">
+      <div class="bv-box-hd">${hd}</div>
+      <div class="bv-row${aW?" bv-w":""}">
+        <span class="bv-flag">${a.flag}</span>
+        <span class="bv-tn">${esc(a.proj)}</span>
+        ${sc?`<span class="bv-sc">${sc.a}</span>`:""}
+      </div>
+      <div class="bv-row${bW?" bv-w":""}">
+        <span class="bv-flag">${b.flag}</span>
+        <span class="bv-tn">${esc(b.proj)}</span>
+        ${sc?`<span class="bv-sc">${sc.b}</span>`:""}
+      </div>
+    </div>`;
+  }
+
+  // Pad arrays to required length
+  function padded(arr,n){const a=[...arr];while(a.length<n)a.push(null);return a.slice(0,n);}
+
+  // Split R32 (16 total) → left 8, right 8
+  const r32L=padded(byRound.r32.slice(0,8),8);
+  const r32R=padded(byRound.r32.slice(8,16),8);
+  const r16L=padded(byRound.r16.slice(0,4),4);
+  const r16R=padded(byRound.r16.slice(4,8),4);
+  const qfL=padded(byRound.qf.slice(0,2),2);
+  const qfR=padded(byRound.qf.slice(2,4),2);
+  const sfL=padded(byRound.sf.slice(0,1),1);
+  const sfR=padded(byRound.sf.slice(1,2),1);
+  const finalM=byRound.final[0]||null;
+  const thirdM=byRound.third[0]||null;
+
+  function colHtml(matches,label,roundKey){
+    return`<div class="bv-col-wrap">
+      <div class="bv-col-hd">${label}</div>
+      <div class="bv-col" data-round="${roundKey}">
+        ${matches.map(m=>boxHtml(m)).join("")}
+      </div>
+    </div>`;
+  }
+
+  // Connector between rounds: nPairs bracket connectors
+  // dir: 'l' → lines go right; 'r' → lines go left
+  function connHtml(nPairs,dir){
+    const itemH=BV_H/(nPairs*2);
+    let lines="";
+    for(let i=0;i<nPairs;i++){
+      const y1=(2*i+0.5)*itemH, y2=(2*i+1.5)*itemH, ym=(y1+y2)/2, h=y2-y1;
+      if(dir==="l"){
+        lines+=`<div style="position:absolute;top:${y1}px;height:${h}px;right:0;width:12px;border-right:1px solid var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)"></div>`;
+        lines+=`<div style="position:absolute;top:${ym}px;left:12px;width:16px;height:1px;background:var(--border)"></div>`;
+      } else {
+        lines+=`<div style="position:absolute;top:${y1}px;height:${h}px;left:0;width:12px;border-left:1px solid var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)"></div>`;
+        lines+=`<div style="position:absolute;top:${ym}px;right:12px;width:16px;height:1px;background:var(--border)"></div>`;
+      }
+    }
+    return`<div class="bv-conn-wrap">
+      <div class="bv-conn-hd"></div>
+      <div class="bv-conn">${lines}</div>
+    </div>`;
+  }
+
+  // SF→Final connector (single line to center)
+  function sfConnHtml(dir){
+    const ym=BV_H/2;
+    let line="";
+    if(dir==="l"){
+      line=`<div style="position:absolute;top:${ym}px;right:0;width:28px;height:1px;background:var(--border)"></div>`;
+    } else {
+      line=`<div style="position:absolute;top:${ym}px;left:0;width:28px;height:1px;background:var(--border)"></div>`;
+    }
+    return`<div class="bv-conn-wrap">
+      <div class="bv-conn-hd"></div>
+      <div class="bv-conn">${line}</div>
+    </div>`;
+  }
+
+  const centerHtml=`<div class="bv-center-wrap">
+    <div class="bv-center-hd">Finale &amp; Platz 3</div>
+    <div class="bv-center">
+      <div class="bv-center-lbl">Finale · 19.07.2026</div>
+      ${boxHtml(finalM)}
+      <div class="bv-center-lbl" style="margin-top:8px">Platz 3 · 18.07.2026</div>
+      ${boxHtml(thirdM)}
+    </div>
+  </div>`;
+
+  el.innerHTML=`<div class="bv-bracket">
+    <div class="bv-half">
+      ${colHtml(r32L,"Sechzehntelfinale","r32")}
+      ${connHtml(4,"l")}
+      ${colHtml(r16L,"Achtelfinale","r16")}
+      ${connHtml(2,"l")}
+      ${colHtml(qfL,"Viertelfinale","qf")}
+      ${connHtml(1,"l")}
+      ${colHtml(sfL,"Halbfinale","sf")}
+      ${sfConnHtml("l")}
+    </div>
+    ${centerHtml}
+    <div class="bv-half">
+      ${sfConnHtml("r")}
+      ${colHtml(sfR,"Halbfinale","sf")}
+      ${connHtml(1,"r")}
+      ${colHtml(qfR,"Viertelfinale","qf")}
+      ${connHtml(2,"r")}
+      ${colHtml(r16R,"Achtelfinale","r16")}
+      ${connHtml(4,"r")}
+      ${colHtml(r32R,"Sechzehntelfinale","r32")}
+    </div>
+  </div>`;
+
+  applyTwemoji(el);
+}
+
+/* ============================================================
    11. HISTORY
    ============================================================ */
 const WM_HISTORY=[
@@ -2948,7 +3181,10 @@ async function liveLoop(){
   updateKPIs();updateApiStatus();
   if(state.view==="schedule") renderSchedule();
   if(state.view==="groups") renderGroups();
-  if(state.view==="ko") renderKO();
+  if(state.view==="ko"){
+    const bvMode=document.querySelector(".bv-toggle-btn.active")?.dataset.bv||"list";
+    if(bvMode==="bracket"){ renderKOBracket(); } else { renderKO(); }
+  }
   if(state.view==="topscorers") renderTopScorers();
   $("#lastRefresh").textContent="↻ "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   pollTimer=setTimeout(liveLoop,pollMs);
@@ -2988,7 +3224,10 @@ function setView(v){
   $("#view-topscorers").classList.toggle("hidden",v!=="topscorers");
   $("#view-history").classList.toggle("hidden",v!=="history");
   if(v==="groups") renderGroups();
-  if(v==="ko") renderKO();
+  if(v==="ko"){
+    const bvMode=document.querySelector(".bv-toggle-btn.active")?.dataset.bv||"list";
+    if(bvMode==="bracket"){ renderKOBracket(); } else { renderKO(); }
+  }
   if(v==="topscorers") renderTopScorers();
   if(v==="history") renderHistory();
 }
@@ -3010,6 +3249,17 @@ function bindUI(){
     state.status=c.dataset.st;
     document.querySelectorAll("#statusChips .chip").forEach(x=>x.setAttribute("aria-pressed",x===c));
     renderSchedule();
+  });
+  document.querySelectorAll(".bv-toggle-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".bv-toggle-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const mode=btn.dataset.bv;
+      $("#bracket").classList.toggle("hidden",mode==="bracket");
+      $("#bracket-visual").classList.toggle("hidden",mode==="list");
+      if(mode==="bracket") renderKOBracket();
+      else renderKO();
+    });
   });
   $("#apiStatus").addEventListener("click",()=>globalSync());
   $("#syncBtn").addEventListener("click",()=>globalSync());
